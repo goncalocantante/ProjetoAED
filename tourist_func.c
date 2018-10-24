@@ -37,12 +37,15 @@ char lerficheiro (char nomefich[] ,int ***mat, int  ***pontos, FILE *fp){
   //retira informações necessárias da primeira linha do ficheiro
   fgets(buffer, 10, fp);
   sscanf (buffer, "%d %d %c %d", &linhas ,&colunas, &modo, &npont);
+  printf("%d, %d, %c, %d\n", linhas, colunas, modo, npont);
+
 
   //matriz com os pontos de interesse
   *pontos = (int**)checkedmalloc(sizeof(int*)*npont);
   for (i = 0; i < npont; i++){
       (*pontos)[i] = (int*)checkedmalloc(sizeof(int)*2);
       fgets(buffer, 100, fp);
+      printf("%s\n", buffer);
       sscanf(buffer, "%d %d", &((*pontos)[i][0]), &((*pontos)[i][1]));
   }
   printf("pontos: %d %d\n", (*pontos)[0][0], (*pontos)[0][1]);
