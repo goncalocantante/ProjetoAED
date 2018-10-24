@@ -5,12 +5,8 @@
 #include <stdlib.h>
 
 
-
-
-
-
-
-
+char lerficheiro (char [] ,int** , int**);
+void* checkedmalloc (size_t);
 
 
 #endif
