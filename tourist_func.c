@@ -24,29 +24,26 @@ void* checkedmalloc (size_t sz){
   return mem;
 }
 
-char lerficheiro (char nomefich[] ,int ***mat, int  ***pontos, FILE *fp){
+char lerficheiro (char nomefich[] ,int ***mat, int  ***pontos, FILE *fp, int *linhas, int *colunas, int *npontos){
   // FILE *fp = NULL;
   int linhas = 0, colunas = 0, npont = 0;
   int i = 0, j = 0;
   char modo = 'D';
-  char buffer[MAXSTR];
 
   // fp = fopen(nomefich, "r");
   // if (fp == NULL) exit(EXIT_FAILURE);
 
   //retira informações necessárias da primeira linha do ficheiro
-  fgets(buffer, 10, fp);
-  sscanf (buffer, "%d %d %c %d", &linhas ,&colunas, &modo, &npont);
-  printf("%d, %d, %c, %d\n", linhas, colunas, modo, npont);
-
+  fscanf (fp, "%d %d %c %d", &linhas ,&colunas, &modo, &npont);
+  if (modo != 'A' && modo != 'B' && modo != 'C') {
+    return '0';
+  }
 
   //matriz com os pontos de interesse
   *pontos = (int**)checkedmalloc(sizeof(int*)*npont);
   for (i = 0; i < npont; i++){
       (*pontos)[i] = (int*)checkedmalloc(sizeof(int)*2);
-      fgets(buffer, 100, fp);
-      printf("%s\n", buffer);
-      sscanf(buffer, "%d %d", &((*pontos)[i][0]), &((*pontos)[i][1]));
+      fscanf(fp, "%d %d", &((*pontos)[i][0]), &((*pontos)[i][1]));
   }
   printf("pontos: %d %d\n", (*pontos)[0][0], (*pontos)[0][1]);
 
@@ -57,12 +54,9 @@ char lerficheiro (char nomefich[] ,int ***mat, int  ***pontos, FILE *fp){
   for (i = 0; i < linhas; i++){
     (*mat)[i] = (int*)checkedmalloc(sizeof(int)*colunas);
     for (j = 0; j < colunas; j++){
-      fgets(buffer, 100, fp);
-      sscanf(buffer,"%d", &(*mat)[i][j]);
+      fscanf(fp,"%d", &(*mat)[i][j]);
     }
   }
-  fgets(buffer, 100, fp); //mete na string buffer a linha em branco
 
-  // printf("%s\n", tes);
   return modo;
 }

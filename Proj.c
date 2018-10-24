@@ -18,22 +18,30 @@ int main(int argc, char *argv[]) {
   if (fp == NULL) exit(EXIT_FAILURE);
 
 
+  while ((modo = lerficheiro(argv[1], &mapa, &pontos, fp)) != '0') {
+    printf("modo-%c\n", modo);
 
-  modo = lerficheiro(argv[1], &mapa, &pontos, fp);
-
-  printf("modo-%c\n", modo);
-
-  printf("pontos: %d %d\n", pontos[0][0], pontos[0][1]);
-  printf("\n");
-  for (i = 0; i < 10; i++){
-    for (j = 0; j < 11; j++){
-      printf("%d ", mapa[i][j]);
-    }
+    printf("pontos: %d %d\n", pontos[0][0], pontos[0][1]);
+    printf("pontos: %d %d\n", pontos[1][0], pontos[1][1]);
     printf("\n");
+    for (i = 0; i < 10; i++){
+      for (j = 0; j < 11; j++){
+        printf("%d ", mapa[i][j]);
+      }
+      printf("\n");
+    }
+    //TODO escrever
+    //TODO fechar
+    for (i = 0; i < 11; i++) {
+      free(mapa[i]);
+    }
+    free(mapa);
+    for (i = 0; i < 2; i++) {
+      free(pontos[i]);
+    }
+    free(pontos);
+
   }
-  //TODO escrever
-  //TODO fechar
-  //TODO free
 
   // if (feof(fp)) {
   //   printf("O ficheiro avabou\n");
