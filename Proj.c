@@ -3,9 +3,9 @@
 #include <string.h>
 
 
-
 int main() {
 
-  together 
+
+
   return(0);
 }
