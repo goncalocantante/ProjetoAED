@@ -6,7 +6,16 @@
 
 #define MAXSTR 100
 
-char lerficheiro (char [] ,int*** , int***, FILE *, int *, int *, int *);
+typedef struct {
+  int nlinhas;
+  int ncolunas;
+  char modo;
+  int npontos;
+  int **pontos;
+  int **mapa;
+}dados;
+
+dados *lerficheiro (char [] , FILE *);
 void* checkedmalloc (size_t);
 void testfile (char [], int);
 
