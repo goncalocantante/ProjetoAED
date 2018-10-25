@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #define MAXSTR 100
+#define MIN(a,b) (a < b ? a : b)
 
 typedef struct {
   int nlinhas;
@@ -15,6 +16,7 @@ typedef struct {
   int **mapa;
 }dados;
 
+int modoA (dados);
 void free_struct(dados *);
 dados *ler_problema (char [] , FILE *);
 void* checked_malloc (size_t);

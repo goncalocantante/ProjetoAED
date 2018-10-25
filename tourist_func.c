@@ -3,13 +3,48 @@
 #include <string.h>
 #include "tourist.h"
 
-int modoA (int x, int y){
-  int i, j, min;
 
+int modoA (dados prob){
+  int i, j, minimo = 5000;
+  int x = prob.pontos[0][0], y = prob.pontos[0][1];
+
+  //verificar para cima
   if (x > 1){
-
+    if (y < prob.ncolunas-1){ //verificar desenho
+      minimo = MIN( minimo, prob.mapa[x-2][y+1]);
+    }
+    if (y > 0){
+      minimo = MIN( minimo, prob.mapa[x-2][y-1]);
+    }
   }
-
+  //verificar para baixo
+  if (x < prob.nlinhas-2){
+    if (y < prob.ncolunas-1){ //verificar desenho
+      minimo = MIN( minimo, prob.mapa[x+2][y+1]);
+    }
+    if (y > 0){
+      minimo = MIN( minimo, prob.mapa[x+2][y-1]);
+    }
+  }
+  //verificar para esquerda
+  if (y > 1){
+    if (x < prob.nlinhas-1){ //verificar desenho
+      minimo = MIN(minimo, prob.mapa[x+1][y-2]);
+    }
+    if (x > 0){
+      minimo = MIN(minimo, prob.mapa[x-1][y-2]);
+    }
+  }
+  //verificar para a direita
+  if (y < prob.ncolunas-2){
+    if (x < prob.nlinhas-1){ //verificar desenho
+      minimo = MIN(minimo, prob.mapa[x+1][y+2]);
+    }
+    if (x > 0){
+      minimo = MIN(minimo, prob.mapa[x-1][y+2]);
+    }
+  }
+  return minimo;
 }
 
 //liberta memória alocada na estrutura
@@ -58,7 +93,6 @@ dados *ler_problema(char nomefich[] ,FILE *fp){
   prob->modo = '\0';
   //retira os dados da primeira linha do ficheiro
   fscanf (fp, "%d %d %c %d", &prob->nlinhas ,&prob->ncolunas, &prob->modo, &prob->npontos);
-  printf("AHHH: %c\n", prob->modo);
   if (prob->modo != 'A' && prob->modo != 'B' && prob->modo != 'C') {     //indica se há outro problema ou não
     free(prob);
     return NULL;
