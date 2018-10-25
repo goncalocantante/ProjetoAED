@@ -4,6 +4,67 @@
 #include "tourist.h"
 
 
+int modoB (dados prob) {
+  int ponto[2] = {prob.ponto[0][0], prob.ponto[0][1]};
+  //verificar para cima
+  for (i = 0; i < prob.npontos - 1; i++) {
+    if (prob.pontos[i][0] > 1){
+      if (prob.pontos[i][1] < prob.ncolunas-1){ //verificar cima, direita
+        if (ponto[prob.pontos[i][0] - 2, prob.pontos[i][1] +  1] == ponto[prob.pontos[i + 1][0], prob.pontos[i + 1][1]]) {
+          valido = 1;
+        }
+      }
+      if (prob.pontos[i][1] > 0){     //verificar cima, esquerda
+        if (ponto[prob.pontos[i][0] - 2, prob.pontos[i][1] -  1] == ponto[prob.pontos[i + 1][0], prob.pontos[i + 1][1]]) {
+          valido = 1;
+      }
+    }
+    //verificar para baixo
+    if (prob.pontos[i][0] < prob.nlinhas-2){
+      if (prob.pontos[i][1 < prob.ncolunas-1){ //verificar baixo, direita
+        if (ponto[prob.pontos[i][0] + 2, prob.pontos[i][1] + 1] == ponto[prob.pontos[i + 1][0], prob.pontos[i + 1][1]]) {
+          valido = 1;
+        }
+      }
+      if (prob.pontos[i][1 > 0){     //verificar baixo, esquerda
+        if (ponto[prob.pontos[i][0] + 2, prob.pontos[i][1] - 1] == ponto[prob.pontos[i + 1][0], prob.pontos[i + 1][1]]) {
+          valido = 1;
+        }
+      }
+    }
+    //verificar para esquerda
+    if (prob.pontos[i][1] > 1){
+      if (prob.pontos[i][0] < prob.nlinhas-1){ //verificar esquerda, baixo
+        if (ponto[prob.pontos[i][0] + 1, prob.pontos[i][1] - 2] == ponto[prob.pontos[i + 1][0], prob.pontos[i + 1][1]]) {
+          valido = 1;
+        }
+      }
+      if (prob.pontos[i][0] > 0){             //verificar esquerda, cima
+        if (ponto[prob.pontos[i][0] - 1, prob.pontos[i][1] - 2] == ponto[prob.pontos[i + 1][0], prob.pontos[i + 1][1]]) {
+          valido = 1;
+        }
+      }
+    }
+    //verificar para a direita
+    if (prob.pontos[i][1] < prob.ncolunas-2){
+      if (prob.pontos[i][0] < prob.nlinhas-1){ //verificar direita, baixo
+        if (ponto[prob.pontos[i][0] + 1, prob.pontos[i][1] +  2] == ponto[prob.pontos[i + 1][0], prob.pontos[i + 1][1]]) {
+          valido = 1;
+        }
+      }
+      if (prob.pontos[i][0] > 0){
+        if (ponto[prob.pontos[i][0] - 1, prob.pontos[i][1] +  2] == ponto[prob.pontos[i + 1][0], prob.pontos[i + 1][1]]) {
+          valido = 1;
+        }
+      }
+    }
+    if (valido == 0) {
+      return 0;
+    }
+  }
+  return 1;
+}
+
 int modoA (dados prob){
   int i, j, minimo = 5000;
   int x = prob.pontos[0][0], y = prob.pontos[0][1];

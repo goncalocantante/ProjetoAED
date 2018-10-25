@@ -16,6 +16,7 @@ typedef struct {
   int **mapa;
 }dados;
 
+int modoB (dados);
 int modoA (dados);
 void free_struct(dados *);
 dados *ler_problema (char [] , FILE *);

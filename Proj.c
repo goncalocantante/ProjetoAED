@@ -7,7 +7,7 @@
 int main(int argc, char *argv[]) {
   FILE *fp = NULL;
   dados *prob;
-  int i, j, resultadoA;
+  int i, j, resultadoA, resultadoB;
 
   test_file(argv[1], argc);
 
@@ -17,9 +17,10 @@ int main(int argc, char *argv[]) {
 
   while ((prob = ler_problema(argv[1], fp)) != NULL) {
 
-    resultadoA = modoA(*prob);
+    // resultadoA = modoA(*prob);
+    resultadoB = modoB(*prob);
 
-    printf("resultado %d\n", resultadoA);
+    printf("resultado %d\n", resultadoB);
 
   //   //TODO escrever
     free_struct(prob);
