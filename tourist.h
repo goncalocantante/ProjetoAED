@@ -15,9 +15,9 @@ typedef struct {
   int **mapa;
 }dados;
 
-dados *lerficheiro (char [] , FILE *);
-void* checkedmalloc (size_t);
-void testfile (char [], int);
+dados *ler_problema (char [] , FILE *);
+void* checked_malloc (size_t);
+void test_file (char [], int);
 
 
 #endif
