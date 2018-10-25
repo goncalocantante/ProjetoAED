@@ -15,6 +15,7 @@ typedef struct {
   int **mapa;
 }dados;
 
+void free_struct(dados *);
 dados *ler_problema (char [] , FILE *);
 void* checked_malloc (size_t);
 void test_file (char [], int);

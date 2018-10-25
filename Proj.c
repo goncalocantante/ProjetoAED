@@ -5,15 +5,15 @@
 
 
 int main(int argc, char *argv[]) {
+  FILE *fp = NULL;
   dados *prob;
   int i, j;
-
-  FILE *fp = NULL;
 
   test_file(argv[1], argc);
 
   fp = fopen(argv[1], "r");
   if (fp == NULL) exit(EXIT_FAILURE);
+  // TODO abrir ficheiro de saida
 
   while ((prob = ler_problema(argv[1], fp)) != NULL) {
 
@@ -28,23 +28,12 @@ int main(int argc, char *argv[]) {
       printf("\n");
     }
     printf("Acabou um problema\n");
+
   //   //TODO escrever
-  //   //TODO fechar
-    for (i = 0; i < 11; i++) {
-      free(prob->mapa[i]);
-    }
-    free(prob->mapa);
-    for (i = 0; i < 2; i++) {
-      free(prob->pontos[i]);
-    }
-    free(prob->pontos);
+    free_struct(prob);
   }
-
-  free(prob);
-
-  // if (feof(fp)) {
-  //   printf("O ficheiro avabou\n");
-  // }
+  //   //TODO fechar os dois ficheiros
+  fclose(fp);
 
   return(0);
 }
