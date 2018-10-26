@@ -4,65 +4,54 @@
 #include "tourist.h"
 
 
-int modoB (dados prob) {
-  int ponto[2] = {prob.ponto[0][0], prob.ponto[0][1]};
-  //verificar para cima
+solucao *modoB (dados prob) {
+  int i = 0, x, y, nx, ny;
+  solucao *B;
+
+  B = (solucao *)checked_malloc(sizeof(solucao));
+  B->custo = prob.mapa[prob.pontos[0][0]][prob.pontos[0][1]];
+
   for (i = 0; i < prob.npontos - 1; i++) {
-    if (prob.pontos[i][0] > 1){
-      if (prob.pontos[i][1] < prob.ncolunas-1){ //verificar cima, direita
-        if (ponto[prob.pontos[i][0] - 2, prob.pontos[i][1] +  1] == ponto[prob.pontos[i + 1][0], prob.pontos[i + 1][1]]) {
-          valido = 1;
-        }
-      }
-      if (prob.pontos[i][1] > 0){     //verificar cima, esquerda
-        if (ponto[prob.pontos[i][0] - 2, prob.pontos[i][1] -  1] == ponto[prob.pontos[i + 1][0], prob.pontos[i + 1][1]]) {
-          valido = 1;
-      }
+    B->valido = 0;
+    x = prob.pontos[i][0];
+    y = prob.pontos[i][1];
+    nx = prob.pontos[i + 1][0];
+    ny = prob.pontos[i + 1][1];
+
+    if (x + 2 == nx && y + 1 == ny) {
+      B->valido = 1;
     }
-    //verificar para baixo
-    if (prob.pontos[i][0] < prob.nlinhas-2){
-      if (prob.pontos[i][1 < prob.ncolunas-1){ //verificar baixo, direita
-        if (ponto[prob.pontos[i][0] + 2, prob.pontos[i][1] + 1] == ponto[prob.pontos[i + 1][0], prob.pontos[i + 1][1]]) {
-          valido = 1;
-        }
-      }
-      if (prob.pontos[i][1 > 0){     //verificar baixo, esquerda
-        if (ponto[prob.pontos[i][0] + 2, prob.pontos[i][1] - 1] == ponto[prob.pontos[i + 1][0], prob.pontos[i + 1][1]]) {
-          valido = 1;
-        }
-      }
+    if (x + 2 == nx && y - 1 == ny) {
+      B->valido = 1;
     }
-    //verificar para esquerda
-    if (prob.pontos[i][1] > 1){
-      if (prob.pontos[i][0] < prob.nlinhas-1){ //verificar esquerda, baixo
-        if (ponto[prob.pontos[i][0] + 1, prob.pontos[i][1] - 2] == ponto[prob.pontos[i + 1][0], prob.pontos[i + 1][1]]) {
-          valido = 1;
-        }
-      }
-      if (prob.pontos[i][0] > 0){             //verificar esquerda, cima
-        if (ponto[prob.pontos[i][0] - 1, prob.pontos[i][1] - 2] == ponto[prob.pontos[i + 1][0], prob.pontos[i + 1][1]]) {
-          valido = 1;
-        }
-      }
+    if (x - 2 == nx && y + 1 == ny) {
+      B->valido = 1;
     }
-    //verificar para a direita
-    if (prob.pontos[i][1] < prob.ncolunas-2){
-      if (prob.pontos[i][0] < prob.nlinhas-1){ //verificar direita, baixo
-        if (ponto[prob.pontos[i][0] + 1, prob.pontos[i][1] +  2] == ponto[prob.pontos[i + 1][0], prob.pontos[i + 1][1]]) {
-          valido = 1;
-        }
-      }
-      if (prob.pontos[i][0] > 0){
-        if (ponto[prob.pontos[i][0] - 1, prob.pontos[i][1] +  2] == ponto[prob.pontos[i + 1][0], prob.pontos[i + 1][1]]) {
-          valido = 1;
-        }
-      }
+    if (x - 2 == nx && y - 1 == ny) {
+      B->valido = 1;
     }
-    if (valido == 0) {
-      return 0;
+
+    if (y + 2 == ny && x + 1 == nx) {
+      B->valido = 1;
     }
+    if (y + 2 == ny && x - 1 == nx) {
+      B->valido = 1;
+    }
+    if (y - 2 == ny && x + 1 == nx) {
+      B->valido = 1;
+    }
+    if (y - 2 == ny && x - 1 == nx) {
+      B->valido = 1;
+    }
+
+    if (B->valido == 0 || prob.mapa[x][y] == 0 || prob.mapa[nx][ny] == 0) {
+      B->custo = 0;
+      B->valido = 0;
+      return B;
+    }
+    B->custo += prob.mapa[nx][ny];
   }
-  return 1;
+  return B;
 }
 
 int modoA (dados prob){
@@ -71,37 +60,37 @@ int modoA (dados prob){
 
   //verificar para cima
   if (x > 1){
-    if (y < prob.ncolunas-1){ //verificar desenho
+    if (y < prob.ncolunas-1){ //verificar cima, direita
       minimo = MIN( minimo, prob.mapa[x-2][y+1]);
     }
-    if (y > 0){
+    if (y > 0){                     //verificar cima,esquerda
       minimo = MIN( minimo, prob.mapa[x-2][y-1]);
     }
   }
   //verificar para baixo
   if (x < prob.nlinhas-2){
-    if (y < prob.ncolunas-1){ //verificar desenho
+    if (y < prob.ncolunas-1){ //verificar baixo, direita
       minimo = MIN( minimo, prob.mapa[x+2][y+1]);
     }
-    if (y > 0){
+    if (y > 0){             //verificar baixo, esquerda
       minimo = MIN( minimo, prob.mapa[x+2][y-1]);
     }
   }
   //verificar para esquerda
   if (y > 1){
-    if (x < prob.nlinhas-1){ //verificar desenho
+    if (x < prob.nlinhas-1){ //verificar esquerda, baixo
       minimo = MIN(minimo, prob.mapa[x+1][y-2]);
     }
-    if (x > 0){
+    if (x > 0){               //verificar esquerda, cima
       minimo = MIN(minimo, prob.mapa[x-1][y-2]);
     }
   }
   //verificar para a direita
   if (y < prob.ncolunas-2){
-    if (x < prob.nlinhas-1){ //verificar desenho
+    if (x < prob.nlinhas-1){ //verificar direita, baixo
       minimo = MIN(minimo, prob.mapa[x+1][y+2]);
     }
-    if (x > 0){
+    if (x > 0){              //verificar direita, cima
       minimo = MIN(minimo, prob.mapa[x-1][y+2]);
     }
   }
