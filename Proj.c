@@ -6,9 +6,8 @@
 
 int main(int argc, char *argv[]) {
   FILE *fp = NULL;
-  dados *prob;
-  solucao *B;
-  int i, j, resultadoA, resultadoB;
+  dados *prob = NULL;
+  solucao *B = NULL, *A = NULL;
 
   test_file(argv[1], argc);
 
@@ -18,14 +17,20 @@ int main(int argc, char *argv[]) {
 
   while ((prob = ler_problema(argv[1], fp)) != NULL) {
 
-    // resultadoA = modoA(*prob);
-  //   B = modoB(*prob);
-  //
-  //   printf("resultado %d\ncusto %d\n", B->valido, B->custo);
-  //
-  // //   //TODO escrever
+    if (prob->modo == 'A') {
+      A = modoA(*prob);
+      printf("resultado %d\ncusto %d\n", A->valido, A->custo);
+    }
+    else if (prob->modo == 'B') {
+      B = modoB(*prob);
+      printf("resultado %d\ncusto %d\n", B->valido, B->custo);
+    }
+
+    printf("\n");
+    //TODO escrever
     free_struct(prob);
-  //   free(B);
+    free(A);
+    free(B);
   }
   //   //TODO fechar os dois ficheiros
   fclose(fp);

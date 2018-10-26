@@ -54,47 +54,53 @@ solucao *modoB (dados prob) {
   return B;
 }
 
-int modoA (dados prob){
-  int i, j, minimo = 5000;
+solucao *modoA (dados prob){
   int x = prob.pontos[0][0], y = prob.pontos[0][1];
+  solucao *A = NULL;
+  A = (solucao *)checked_malloc(sizeof(solucao));
+  A->valido = 1;
+  A->custo = 5000;
 
   //verificar para cima
   if (x > 1){
     if (y < prob.ncolunas-1){ //verificar cima, direita
-      minimo = MIN( minimo, prob.mapa[x-2][y+1]);
+      A->custo = MIN( A->custo, prob.mapa[x-2][y+1]);
     }
     if (y > 0){                     //verificar cima,esquerda
-      minimo = MIN( minimo, prob.mapa[x-2][y-1]);
+      A->custo = MIN( A->custo, prob.mapa[x-2][y-1]);
     }
   }
   //verificar para baixo
   if (x < prob.nlinhas-2){
     if (y < prob.ncolunas-1){ //verificar baixo, direita
-      minimo = MIN( minimo, prob.mapa[x+2][y+1]);
+      A->custo = MIN( A->custo, prob.mapa[x+2][y+1]);
     }
     if (y > 0){             //verificar baixo, esquerda
-      minimo = MIN( minimo, prob.mapa[x+2][y-1]);
+      A->custo = MIN( A->custo, prob.mapa[x+2][y-1]);
     }
   }
   //verificar para esquerda
   if (y > 1){
     if (x < prob.nlinhas-1){ //verificar esquerda, baixo
-      minimo = MIN(minimo, prob.mapa[x+1][y-2]);
+      A->custo = MIN(A->custo, prob.mapa[x+1][y-2]);
     }
     if (x > 0){               //verificar esquerda, cima
-      minimo = MIN(minimo, prob.mapa[x-1][y-2]);
+      A->custo = MIN(A->custo, prob.mapa[x-1][y-2]);
     }
   }
   //verificar para a direita
   if (y < prob.ncolunas-2){
     if (x < prob.nlinhas-1){ //verificar direita, baixo
-      minimo = MIN(minimo, prob.mapa[x+1][y+2]);
+      A->custo = MIN(A->custo, prob.mapa[x+1][y+2]);
     }
     if (x > 0){              //verificar direita, cima
-      minimo = MIN(minimo, prob.mapa[x-1][y+2]);
+      A->custo = MIN(A->custo, prob.mapa[x-1][y+2]);
     }
   }
-  return minimo;
+  if (A->custo == 0) {
+    A->valido = 0;
+  }
+  return A;
 }
 
 //liberta memória alocada na estrutura
