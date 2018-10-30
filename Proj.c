@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "tourist.h"
-
+ dfdsfdssgdf
 
 int main(int argc, char *argv[]) {
   FILE *fp = NULL;
