@@ -138,11 +138,18 @@ void free_struct(dados *estrutura){
 //verifica o número de argumentos da chamada do programa
 void test_file (char nomefich[], int argc){
   char extensao[MAXSTR] = ".cities";
+  char ext_fich[MAXSTR];
+  int i, j = 0;
+
+  for (i = strlen(nomefich) - 7; i <= strlen(nomefich); i++) { // 7 = strlen de .cities
+    ext_fich[j] = nomefich[i];
+    j++;
+  }
 
   if (argc != 2) {
     exit(EXIT_FAILURE);
   }
-  if (strstr(nomefich, extensao) == NULL) {
+  if (strcmp(ext_fich, extensao) != 0) {
     exit(EXIT_FAILURE);
   }
 }
