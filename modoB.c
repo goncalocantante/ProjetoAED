@@ -12,7 +12,7 @@ solucao *modoB (dados prob) {
   solucao *B;
 
   B = (solucao *)checked_malloc(sizeof(solucao));
-  B->custo = prob.mapa[prob.pontos[0][0]][prob.pontos[0][1]];
+  B->custo = 0;
 
   for (i = 0; i < prob.npontos - 1; i++) {
     B->valido = -1;
