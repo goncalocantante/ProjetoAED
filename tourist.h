@@ -21,8 +21,6 @@ typedef struct {
   int custo;
 }solucao;
 
-solucao *modoB (dados);
-solucao *modoA (dados);
 void free_struct(dados *);
 dados *ler_problema (char [] , FILE *);
 void* checked_malloc (size_t);
