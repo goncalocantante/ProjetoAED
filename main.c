@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "tourist.h"
+#include "modos.h"
 
 int main(int argc, char *argv[]) {
   FILE *fp_in = NULL;

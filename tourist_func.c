@@ -123,7 +123,7 @@
 void free_struct(dados *estrutura){
   int i;
 
-  for (i = 0; i < estrutura->ncolunas; i++) {
+  for (i = 0; i < estrutura->nlinhas; i++) {
     free(estrutura->mapa[i]);
   }
   free(estrutura->mapa);
