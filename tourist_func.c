@@ -147,10 +147,10 @@ void test_file (char nomefich[], int argc){
   }
 
   if (argc != 2) {
-    exit(EXIT_FAILURE);
+    exit(0);
   }
   if (strcmp(ext_fich, extensao) != 0) {
-    exit(EXIT_FAILURE);
+    exit(0);
   }
 }
 

@@ -1,4 +1,4 @@
-CFLAGS= -g -Wall
+CFLAGS= -O3 -Wall -std=c99
 
 Proj:   tourist_func.o Proj.o 
 	gcc $(CFLAGS) -o tuktuk tourist_func.o Proj.o
