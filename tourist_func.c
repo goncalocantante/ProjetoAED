@@ -64,41 +64,57 @@ solucao *modoA (dados prob){
   //verificar para cima
   if (x > 1){
     if (y < prob.ncolunas-1){ //verificar cima, direita
-      A->custo = MIN( A->custo, prob.mapa[x-2][y+1]);
+      if (prob.mapa[x-2][y+1] != 0) {    //verifica se a celula que vai aceder é acessivel
+        A->custo = MIN( A->custo, prob.mapa[x-2][y+1]);
+      }
     }
     if (y > 0){                     //verificar cima,esquerda
-      A->custo = MIN( A->custo, prob.mapa[x-2][y-1]);
+      if (prob.mapa[x-2][y-1] != 0) {
+        A->custo = MIN( A->custo, prob.mapa[x-2][y-1]);
+      }
     }
   }
   //verificar para baixo
-  if (x < prob.nlinhas-2){
+  if (x < prob.nlinhas-2) {
     if (y < prob.ncolunas-1){ //verificar baixo, direita
-      A->custo = MIN( A->custo, prob.mapa[x+2][y+1]);
+      if (prob.mapa[x+2][y+1] != 0){
+        A->custo = MIN( A->custo, prob.mapa[x+2][y+1]);
+      }
     }
     if (y > 0){             //verificar baixo, esquerda
-      A->custo = MIN( A->custo, prob.mapa[x+2][y-1]);
+      if (prob.mapa[x+2][y-1] != 0) {
+        A->custo = MIN( A->custo, prob.mapa[x+2][y-1]);
+      }
     }
   }
   //verificar para esquerda
   if (y > 1){
     if (x < prob.nlinhas-1){ //verificar esquerda, baixo
-      A->custo = MIN(A->custo, prob.mapa[x+1][y-2]);
+      if (prob.mapa[x+1][y-2] != 0) {
+        A->custo = MIN(A->custo, prob.mapa[x+1][y-2]);
+      }
     }
     if (x > 0){               //verificar esquerda, cima
-      A->custo = MIN(A->custo, prob.mapa[x-1][y-2]);
+      if (prob.mapa[x-1][y-2] != 0) {
+        A->custo = MIN(A->custo, prob.mapa[x-1][y-2]);
+      }
     }
   }
   //verificar para a direita
   if (y < prob.ncolunas-2){
     if (x < prob.nlinhas-1){ //verificar direita, baixo
-      A->custo = MIN(A->custo, prob.mapa[x+1][y+2]);
+      if (prob.mapa[x+1][y+2] != 0) {
+        A->custo = MIN(A->custo, prob.mapa[x+1][y+2]);
+      }
     }
     if (x > 0){              //verificar direita, cima
-      A->custo = MIN(A->custo, prob.mapa[x-1][y+2]);
+      if (prob.mapa[x-1][y+2] != 0) {
+        A->custo = MIN(A->custo, prob.mapa[x-1][y+2]);
+      }
     }
   }
-  if (A->custo == 0) {
-    A->valido = 0;
+  if (A->custo == 5000) {
+    A->valido = -1;
   }
   return A;
 }
@@ -111,7 +127,7 @@ void free_struct(dados *estrutura){
     free(estrutura->mapa[i]);
   }
   free(estrutura->mapa);
-  for (i = 0; i < 2; i++) {
+  for (i = 0; i < estrutura->npontos; i++) {
     free(estrutura->pontos[i]);
   }
   free(estrutura->pontos);
