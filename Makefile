@@ -1,4 +1,4 @@
-CFLAGS= : -Wall -std=c99 -O3
+CFLAGS= -g -Wall -std=c99
 VFLAGS= --leak-check=full
 
 Proj:   tourist_func.o Proj.o 
@@ -9,6 +9,9 @@ tourist_func.o: tourist_func.c tourist.h
 
 Proj.o: Proj.c tourist.h
 	gcc $(CFLAGS) -c Proj.c
+
+valgrind:
+	valgrind $(VFLAGS) ./tuktuk file.cities
 
 clean:
 	rm -f *.o *.~ tuktuk *.gch
