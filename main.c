@@ -9,9 +9,9 @@ int main(int argc, char *argv[]) {
   FILE *fp_in = NULL;
   FILE *fp_out = NULL;
   dados *prob = NULL;
-  solucao *B = NULL, *A = NULL;
+  solucao *sol = NULL;
   char file_out[MAXSTR];
-  int i = 0, ponto_invalido = 0;
+  int i = 0;
 
   strcpy(file_out, argv[1]);
 
@@ -29,38 +29,9 @@ int main(int argc, char *argv[]) {
 
   while ((prob = ler_problema(argv[1], fp_in)) != NULL) {
 
-    for (i = 0; i < prob->npontos; i++) {
-      if (((prob->pontos[i][0] >= prob->nlinhas) && (prob->pontos[i][1] >= prob->ncolunas))
-        || (prob->mapa[prob->pontos[i][0]][prob->pontos[i][1]] == 0)) {
-        ponto_invalido = 1;
-        i = 10000;
-      }
-    }
-
-    if (prob->modo == 'A') {
-      if (ponto_invalido != 1) {
-        A = modoA(*prob);
-      }
-      else {
-        A = (solucao *)checked_malloc(sizeof(solucao));
-        A->valido = -1;
-        A->custo = 0;
-      }
-      fprintf(fp_out,"%d %d %c %d %d %d\n", prob->nlinhas, prob->ncolunas, prob->modo, prob->npontos, A->valido, A->custo);
-      free(A);
-    }
-    else if (prob->modo == 'B') {
-      if (ponto_invalido != 1) {
-        B = modoB(*prob);
-      }
-      else {
-        B = (solucao *)checked_malloc(sizeof(solucao));
-        B->valido = -1;
-        B->custo = 0;
-      }
-      fprintf(fp_out,"%d %d %c %d %d %d\n", prob->nlinhas, prob->ncolunas, prob->modo, prob->npontos, B->valido, B->custo);
-      free(B);
-    }
+    sol = solve_problem(*prob);
+    fprintf(fp_out,"%d %d %c %d %d %d\n", prob->nlinhas, prob->ncolunas, prob->modo, prob->npontos, sol->valido, sol->custo);
+    free(sol);
 
     fprintf(fp_out, "\n");
     free_struct(prob);

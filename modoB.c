@@ -13,9 +13,9 @@ solucao *modoB (dados prob) {
 
   B = (solucao *)checked_malloc(sizeof(solucao));
   B->custo = 0;
+  B->valido = -1;
 
   for (i = 0; i < prob.npontos - 1; i++) {
-    B->valido = -1;
     x = prob.pontos[i][0];
     y = prob.pontos[i][1];
     nx = prob.pontos[i + 1][0];

@@ -25,6 +25,9 @@ void free_struct(dados *);
 dados *ler_problema (char [] , FILE *);
 void* checked_malloc (size_t);
 void test_file (char [], int);
+int validate_points(dados);
+int validate_exercise(dados);
+solucao* solve_problem(dados);
 
 
 #endif
