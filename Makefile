@@ -1,23 +1,29 @@
-CFLAGS= -g -Wall -std=c99
+CFLAGS= -g -Wall -std=c99 -Wextra
 VFLAGS= --leak-check=full
 
-main:   tourist_func.o main.o modoA.o modoB.o
-	gcc $(CFLAGS) -o tuktuk tourist_func.o main.o modoA.o modoB.o
+main:   main.o problemas.o utils.o file.o
+	gcc $(CFLAGS) -o tuktuk main.o problemas.o utils.o file.o
 
-tourist_func.o: tourist_func.c tourist.h
-	gcc $(CFLAGS) -c tourist_func.c
 
-main.o: main.c tourist.h
+main.o: main.c file.h problemas.h
 	gcc $(CFLAGS) -c main.c
 
-modoA.o: modoA.c tourist.h modos.h
-	gcc $(CFLAGS) -c modoA.c
 
-modoB.o: modoB.c tourist.h modos.h
-	gcc $(CFLAGS) -c modoB.c
+file.o: file.c file.h utils.h
+	gcc $(CFLAGS) -c file.c
+	
+
+problemas.o: problemas.c problemas.h utils.h
+	gcc $(CFLAGS) -c problemas.c
+
+
+utils.o: utils.c utils.h
+	gcc $(CFLAGS) -c utils.c
+
 
 valgrind:
 	valgrind $(VFLAGS) ./tuktuk file.cities
+
 
 clean:
 	rm -f *.o *.~ tuktuk *.gch
