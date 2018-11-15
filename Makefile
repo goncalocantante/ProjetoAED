@@ -11,7 +11,7 @@ main.o: main.c file.h problemas.h
 
 file.o: file.c file.h utils.h
 	gcc $(CFLAGS) -c file.c
-	
+
 
 problemas.o: problemas.c problemas.h utils.h
 	gcc $(CFLAGS) -c problemas.c

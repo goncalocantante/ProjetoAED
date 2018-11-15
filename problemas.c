@@ -103,37 +103,45 @@ solucao *modoB (problema prob) {
   B->valido = -1;
 
   for (i = 0; i < prob.npontos - 1; i++) {
+    B->valido = -1;
     x = prob.pontos[i][0];
     y = prob.pontos[i][1];
     nx = prob.pontos[i + 1][0];
     ny = prob.pontos[i + 1][1];
 
-    if (x + 2 == nx && y + 1 == ny) {
+    //baixo direita
+    if ((x + 2) == nx && (y + 1) == ny) {
       B->valido = 1;
     }
-    if (x + 2 == nx && y - 1 == ny) {
+    //baixo esquerda
+    if ((x + 2) == nx && (y - 1) == ny) {
       B->valido = 1;
     }
-    if (x - 2 == nx && y + 1 == ny) {
+    //cima direita
+    if ((x - 2) == nx && (y + 1) == ny) {
       B->valido = 1;
     }
-    if (x - 2 == nx && y - 1 == ny) {
+    //cima esquerda
+    if ((x - 2) == nx && (y - 1) == ny) {
       B->valido = 1;
     }
-
-    if (y + 2 == ny && x + 1 == nx) {
+    //direita baixo
+    if ((y + 2) == ny && (x + 1) == nx) {
       B->valido = 1;
     }
-    if (y + 2 == ny && x - 1 == nx) {
+    //direita cima
+    if ((y + 2) == ny && (x - 1) == nx) {
       B->valido = 1;
     }
-    if (y - 2 == ny && x + 1 == nx) {
+    //esquerda baixo
+    if ((y - 2) == ny && (x + 1) == nx) {
       B->valido = 1;
     }
-    if (y - 2 == ny && x - 1 == nx) {
+    //esquerda cima
+    if ((y - 2) == ny && (x - 1) == nx) {
       B->valido = 1;
     }
-
+    //valida a jogada
     if (B->valido == -1 || prob.mapa[x][y] == 0 || prob.mapa[nx][ny] == 0) {
       B->custo = 0;
       B->valido = -1;
