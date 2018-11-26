@@ -10,8 +10,8 @@ problema *ler_problema(FILE *fp){
   prob = (problema *)checked_malloc(sizeof(problema));
 
   //retira os dados da primeira linha do ficheiro
-  n_scan = fscanf (fp, "%d %d %c %d", &prob->nlinhas ,&prob->ncolunas, &prob->modo, &prob->npontos);
-  if (n_scan == EOF) {     //indica se há outro problema ou não
+  n_scan = fscanf (fp,"%d %d %c %d", &prob->nlinhas ,&prob->ncolunas, &prob->modo, &prob->npontos);
+  if (n_scan == EOF) {    //indica se há outro problema ou não
     free(prob);
     return NULL;
   }
