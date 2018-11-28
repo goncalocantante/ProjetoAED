@@ -10,6 +10,6 @@ LinkedList* InsertList(LinkedList *head, Vertice *payload){
 	if(head == NULL)
 		return new;
 	new->next = head;
-
+	
 	return new; 
 }
