@@ -29,7 +29,7 @@ void free_problema(problema *);
 solucao* solve_problem(problema);
 solucao *modoB (problema);
 void modoA ();
-void InsertAdjVert(problema , int , int , Heap** , int , int );
+void InsertAdjVert(problema , int , int , Heap** , int *, int );
 
 
 #endif

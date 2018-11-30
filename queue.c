@@ -14,12 +14,12 @@ Heap** HeapInit (int size){
 	return queue;
 }
 
-void HeapInsert (Heap** queue, Heap *I, int free, int heap_size){
-	if ( (free+1) < heap_size ){
-		queue[free] = I;
+void HeapInsert (Heap** queue, Heap *I, int *free, int heap_size){
+	if ( (*free+1) < heap_size ){
+		queue[*free] = I;
 	}
-	FixUp(queue, free);
-	free++;
+	FixUp(queue, *free);
+	*free = *free + 1;
 }
 
 void FixUp (Heap **queue, int Idx){
@@ -50,24 +50,25 @@ void PriorityDec(int x, int y, Heap **heap, int key, int size){
 		if (heap[i]->x == x && heap[i]->y == y){
 			//altera a key e repoe a ordem do heap
 			heap[i]->key = key;
-			Fixup(heap, i);
+			FixUp(heap, i);
 			break;
 		}
 	}
 }
 
-BOOL EmptyHeap (Heap **queue){
-	return (queue[0] == NULL ? TRUE : FALSE);
+int EmptyHeap (Heap **queue){
+	return (queue[0] == NULL ? 1 : 0);
 }
 
-void HeapDeleteMin(Heap **heap, int *free){
+Heap * HeapDeleteMin(Heap **heap, int *free){
 		//troca primeiro com o último
 		exch(heap[0], heap[*free-1]);
 		//elimina o ultimo
-		free(heap[*free-1]);
-		heap[*free-1] = NULL;
-		*free = *free - 1;
-		//FixDown();		
+		/*  FixDown(*free);*/
+		//free(heap[*free-1]);
+		//heap[*free-1] = NULL;
+		
+		return heap[*free];
 }
 
 void FixDown (Heap **queue, int Idx){

@@ -2,7 +2,7 @@
 #define QUEUE_H
 
 #include "utils.h"
-
+#include <stdbool.h>
 
 typedef struct {
 	int key;
@@ -11,10 +11,10 @@ typedef struct {
 
 
 Heap** HeapInit (int);
-void HeapInsert (Heap** , Heap *, int , int );
+void HeapInsert (Heap** , Heap *, int *, int );
 void FixUp (Heap **, int );
 void exch(Heap *, Heap *);
-BOOL EmptyHeap (Heap **);
+int EmptyHeap (Heap **);
 void PriorityDec(int , int , Heap **, int , int );
 
 

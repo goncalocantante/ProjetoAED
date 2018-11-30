@@ -1,4 +1,5 @@
 #include <limits.h>
+#include <stdbool.h>
 
 #include "utils.h"
 #include "problemas.h"
@@ -115,16 +116,21 @@ void modoA (problema prob){
   //inicializa o Heap
   queue = HeapInit(hsize);
   //insere no heap todos os vértices adjacentes
-  InsertAdjVert(prob, prob.pontos[0][0], prob.pontos[0][1], queue, free, hsize);
+  InsertAdjVert(prob, prob.pontos[0][0], prob.pontos[0][1], queue, &free, hsize);
   wt[x][y] = 0;
-  PriorityDec(x, y, queue, free);
-  while(!EmptyHeap(queue)){
-    
-  }
+  PriorityDec(x, y, queue, 0, free);
+/*   while(!EmptyHeap(queue)){
+    //falta inserir o ponto inicial na fila
+    coord = delminie
+    if(wt[coord[0]][coord[1]] != INT_MAX/2){
+
+    }
+
+  } */
 }
 
 //to be done
-void InsertAdjVert(problema prob, int x, int y, Heap** queue, int free, int size){
+void InsertAdjVert(problema prob, int x, int y, Heap** queue, int *free, int size){
   Heap *I = NULL;
   //verificar para cima
   if (x > 1){
