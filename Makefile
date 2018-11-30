@@ -2,7 +2,7 @@ CFLAGS= -g -Wall -std=c99
 VFLAGS= --leak-check=full
 
 main:   main.o problemas.o utils.o file.o queue.o
-	gcc $(CFLAGS) -o tuktuk main.o problemas.o utils.o file.o
+	gcc $(CFLAGS) -o tuktuk main.o problemas.o utils.o file.o queue.o
 
 
 main.o: main.c file.h problemas.h 

@@ -17,5 +17,4 @@ void exch(Heap *, Heap *);
 int EmptyHeap (Heap **);
 void PriorityDec(int , int , Heap **, int , int );
 
-
 #endif
