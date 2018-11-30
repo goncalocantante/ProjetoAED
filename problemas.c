@@ -1,6 +1,7 @@
+#include <limits.h>
 
-#include "problemas.h"
 #include "utils.h"
+#include "problemas.h"
 
 
 problema *ler_problema(FILE *fp){
@@ -29,7 +30,6 @@ problema *ler_problema(FILE *fp){
       n_scan = fscanf(fp,"%d", &prob->mapa[i][j]);
     }
   }
-
   return prob;
 }
 
@@ -77,7 +77,8 @@ void free_problema(problema *estrutura){
   free(estrutura);
 }
 
-solucao *solve_problem(problema prob) {
+
+solucao *solve_problem(problema prob){
   solucao *sol = NULL;
 
   if (validate_problem(prob) == 0 || validate_points(prob) == 0) {
@@ -86,89 +87,64 @@ solucao *solve_problem(problema prob) {
     sol->custo = 0;
   }
   else if (prob.modo == 'A') {
-    sol = modoA(prob);
-  }
-  else if (prob.modo == 'B') {
-    sol = modoB(prob);
+     modoA(prob);
   }
   return sol;
 }
 
-solucao *modoB (problema prob) {
-  int i = 0, x, y, nx, ny;
-  solucao *B;
+//algoritmo de Dijkstra
+void modoA (problema prob){
+  Heap** queue = NULL;
+  int v, w, hsize, free = 0, x = prob.pontos[0][0], y = prob.pontos[0][1];
+  int **wt, **st;
 
-  B = (solucao *)checked_malloc(sizeof(solucao));
-  B->custo = 0;
-  B->valido = -1;
-
-  for (i = 0; i < prob.npontos - 1; i++) {
-    B->valido = -1;
-    x = prob.pontos[i][0];
-    y = prob.pontos[i][1];
-    nx = prob.pontos[i + 1][0];
-    ny = prob.pontos[i + 1][1];
-
-    //baixo direita
-    if ((x + 2) == nx && (y + 1) == ny) {
-      B->valido = 1;
+  //há possibilidade de fazer isto logo quando lemos o problema e evitamos fazer for for 
+  hsize = prob.nlinhas*prob.ncolunas;
+  //inicializa as matrizes do peso e do vértice anterior
+  wt = (int **)checked_malloc(sizeof(int*)*prob.nlinhas);
+  st = (int **)checked_malloc(sizeof(int*)*prob.nlinhas);
+  for (v = 0; v < prob.nlinhas; v++){
+    //acho que tem de se alocar para float o wt, mas faço isso depois
+    wt[v] = (int*)checked_malloc(sizeof(int)*prob.ncolunas);
+    st[v] = (int*)checked_malloc(sizeof(int)*prob.ncolunas);
+    for (w = 0; w < prob.ncolunas; w++){
+      st[v][w] = -1;
+      wt[v][w] = INT_MAX/2; 
     }
-    //baixo esquerda
-    if ((x + 2) == nx && (y - 1) == ny) {
-      B->valido = 1;
-    }
-    //cima direita
-    if ((x - 2) == nx && (y + 1) == ny) {
-      B->valido = 1;
-    }
-    //cima esquerda
-    if ((x - 2) == nx && (y - 1) == ny) {
-      B->valido = 1;
-    }
-    //direita baixo
-    if ((y + 2) == ny && (x + 1) == nx) {
-      B->valido = 1;
-    }
-    //direita cima
-    if ((y + 2) == ny && (x - 1) == nx) {
-      B->valido = 1;
-    }
-    //esquerda baixo
-    if ((y - 2) == ny && (x + 1) == nx) {
-      B->valido = 1;
-    }
-    //esquerda cima
-    if ((y - 2) == ny && (x - 1) == nx) {
-      B->valido = 1;
-    }
-    //valida a jogada
-    if (B->valido == -1 || prob.mapa[x][y] == 0 || prob.mapa[nx][ny] == 0) {
-      B->custo = 0;
-      B->valido = -1;
-      return B;
-    }
-    B->custo += prob.mapa[nx][ny];
   }
-  return B;
+  //inicializa o Heap
+  queue = HeapInit(hsize);
+  //insere no heap todos os vértices adjacentes
+  InsertAdjVert(prob, prob.pontos[0][0], prob.pontos[0][1], queue, free, hsize);
+  wt[x][y] = 0;
+  PriorityDec(x, y, queue, free);
+  while(!EmptyHeap(queue)){
+    
+  }
 }
 
-solucao *modoA (problema prob){
-  int x = prob.pontos[0][0], y = prob.pontos[0][1];
-  solucao *A = NULL;
-  A = (solucao *)checked_malloc(sizeof(solucao));
-  A->valido = 1;
-  A->custo = 5000;
-
+//to be done
+void InsertAdjVert(problema prob, int x, int y, Heap** queue, int free, int size){
+  Heap *I = NULL;
   //verificar para cima
   if (x > 1){
     if (y < prob.ncolunas-1){ //verificar cima, direita
-      if (prob.mapa[x-2][y+1] != 0) {    //verifica se a celula que vai aceder é acessivel
-        A->custo = MIN( A->custo, prob.mapa[x-2][y+1]);
+      if (prob.mapa[x-2][y+1] != 0) {   //verifica se a celula que vai aceder é acessivel
+        I = (Heap*)checked_malloc(sizeof(Heap));
+        I->key = INT_MAX/2;
+        I->x = x-2;
+        I->y = y+1;
+        HeapInsert (queue, I, free, size);
+        
       }
     }
     if (y > 0){                     //verificar cima,esquerda
       if (prob.mapa[x-2][y-1] != 0) {
-        A->custo = MIN( A->custo, prob.mapa[x-2][y-1]);
+        I = (Heap*)checked_malloc(sizeof(Heap));
+        I->key = INT_MAX/2;
+        I->x = x-2;
+        I->y = y-1;
+        HeapInsert (queue, I, free, size);
       }
     }
   }
@@ -176,12 +152,21 @@ solucao *modoA (problema prob){
   if (x < prob.nlinhas-2) {
     if (y < prob.ncolunas-1){ //verificar baixo, direita
       if (prob.mapa[x+2][y+1] != 0){
-        A->custo = MIN( A->custo, prob.mapa[x+2][y+1]);
+        I = (Heap*)checked_malloc(sizeof(Heap));
+        I->key = INT_MAX/2;
+        I->x = x+2;
+        I->y = y+1;
+        HeapInsert (queue, I, free, size);
+ 
       }
     }
     if (y > 0){             //verificar baixo, esquerda
       if (prob.mapa[x+2][y-1] != 0) {
-        A->custo = MIN( A->custo, prob.mapa[x+2][y-1]);
+        I = (Heap*)checked_malloc(sizeof(Heap));
+        I->key = INT_MAX/2;
+        I->x = x+2;
+        I->y = y-1;
+        HeapInsert (queue, I, free, size);
       }
     }
   }
@@ -189,12 +174,20 @@ solucao *modoA (problema prob){
   if (y > 1){
     if (x < prob.nlinhas-1){ //verificar esquerda, baixo
       if (prob.mapa[x+1][y-2] != 0) {
-        A->custo = MIN(A->custo, prob.mapa[x+1][y-2]);
+        I = (Heap*)checked_malloc(sizeof(Heap));
+        I->key = INT_MAX/2;
+        I->x = x+1;
+        I->y = y-2;
+        HeapInsert (queue, I, free, size);
       }
     }
     if (x > 0){               //verificar esquerda, cima
       if (prob.mapa[x-1][y-2] != 0) {
-        A->custo = MIN(A->custo, prob.mapa[x-1][y-2]);
+        I = (Heap*)checked_malloc(sizeof(Heap));
+        I->key = INT_MAX/2;
+        I->x = x-11;
+        I->y = y-2;
+        HeapInsert (queue, I, free, size);
       }
     }
   }
@@ -202,18 +195,23 @@ solucao *modoA (problema prob){
   if (y < prob.ncolunas-2){
     if (x < prob.nlinhas-1){ //verificar direita, baixo
       if (prob.mapa[x+1][y+2] != 0) {
-        A->custo = MIN(A->custo, prob.mapa[x+1][y+2]);
+        I = (Heap*)checked_malloc(sizeof(Heap));
+        I->key = INT_MAX/2;
+        I->x = x+1;
+        I->y = y+2;
+        HeapInsert (queue, I, free, size);
       }
     }
     if (x > 0){              //verificar direita, cima
       if (prob.mapa[x-1][y+2] != 0) {
-        A->custo = MIN(A->custo, prob.mapa[x-1][y+2]);
+        I = (Heap*)checked_malloc(sizeof(Heap));
+        I->key = INT_MAX/2;
+        I->x = x-1;
+        I->y = y+2;
+        HeapInsert (queue, I, free, size);
       }
     }
   }
-  if (A->custo == 5000) {
-    A->valido = -1;
-    A->custo = 0;
-  }
-  return A;
+ 
+
 }

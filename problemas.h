@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "queue.h"
+
+
 typedef struct {
   int nlinhas;
   int ncolunas;
@@ -25,6 +28,8 @@ int validate_points(problema);
 void free_problema(problema *);
 solucao* solve_problem(problema);
 solucao *modoB (problema);
-solucao *modoA (problema);
+void modoA ();
+void InsertAdjVert(problema , int , int , Heap** , int , int );
+
 
 #endif

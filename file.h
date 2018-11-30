@@ -8,5 +8,4 @@
 void test_file (char [], int);
 char* CreateOutputFileName(char *);
 
-
 #endif
