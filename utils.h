@@ -7,6 +7,8 @@
 
 #define MIN(a,b) (a < b ? a : b)
 
+typedef void *Item;
+
 void* checked_malloc(size_t);
 
 #endif

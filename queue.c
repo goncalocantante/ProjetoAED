@@ -3,79 +3,163 @@
 
 #include "queue.h"
 
-#define lessPri(A, B) (A->key > B->key)
+struct _heap
+{
+	int size;
+	int free;
+	int (*less)(Item, Item); //para comparar items
+	Item *heapdata;
+};
 
 
-Heap** HeapInit (int size){
-	int i;
-	Heap **queue = checked_malloc(sizeof(Heap*)*size);
-	for (i = 0; i < size; i++)
-		queue[i] = NULL;
-	return queue;
+Heap *HeapInit(int (*less)(Item, Item), int size)
+{
+	Heap *_heap = (Heap *)checked_malloc(sizeof(Heap));
+	_heap->size = size;
+	_heap->free = 0;
+	_heap->less = less;
+	_heap->heapdata = (Item *)checked_malloc(sizeof(Item)*size);
+	return _heap;
 }
 
-void HeapInsert (Heap** queue, Heap *I, int *free, int heap_size){
-	if ( (*free+1) < heap_size ){
-		queue[*free] = I;
+ 
+void HeapInsert(Heap *h, Item item)
+{
+	if ((h->free + 1) < h->size)
+	{
+		(h->heapdata)[h->free] = item;
 	}
-	FixUp(queue, *free);
-	*free = *free + 1;
+	FixUp(h, h->free);   
+	(h->free)++;
 }
 
-void FixUp (Heap **queue, int Idx){
+void FixUp(Heap *h, int Idx)
+{
+	Item t;
 	//enquanto o pai for menos prioritario que o filho
-	while(Idx > 0 && lessPri(queue[(Idx-1)/2], queue[Idx])){
-		exch( queue[Idx], queue[(Idx-1)/2]);
-		//sobe no acervo
-		Idx = (Idx-1)/2;
+	while (Idx > 0 && (h->less)((h->heapdata)[(Idx - 1) / 2], (h->heapdata)[Idx]))
+	{
+		//Troca o filho com o pai
+		t = (h->heapdata)[Idx]; //filho
+		(h->heapdata)[Idx] = (h->heapdata)[(Idx - 1) / 2]; //filho = pai
+		(h->heapdata)[(Idx - 1) / 2] = t; //pai = filho
+		//Continua a subir do acervo
+		Idx = (Idx - 1) / 2;
+	}
+	return;
+}
+
+
+void FixDown(Heap *h, int Idx)
+{
+	int Child; //indície do nó descendente
+	int leaf = ((h->free) - 1);
+	Item t;
+		
+	//enquanto não chega às folhas
+	while (2 * Idx < leaf)
+	{ 
+		Child = 2 * Idx + 1;
+		//seleciona o filho mais prioritário
+		//se Child = leaf, significa é filho único
+		if (Child < leaf && (h->less)((h->heapdata)[Child], (h->heapdata)[Child+1]))
+			Child++;
+		if ((h->less)((h->heapdata)[Child], (h->heapdata)[Idx])) // se o pai é mais prioritário que o filho
+			break;						                         //condição de heap satisfeita
+
+		//troca o pai com o filho mais prioritário
+   		t = (h->heapdata)[Child];				   //filho
+		(h->heapdata)[Child] = (h->heapdata)[Idx]; //filho = pai
+		(h->heapdata)[Idx] = t;				       //pai = filho
+
+		Idx = Child; //continua a descer na árvore
 	}
 }
 
-void exch(Heap *A, Heap *B){
-	int key = A->key, x = A->x, y = A->y;
+/* void ChangePri(Heap *h, int index , Item item)
+{	
+	//se o index não estiver dentro dos limites
+	if (index > h->free-1){
+		exit(0);
+	}
 
-	A->key = B->key;
-	A->x = B->x;
-	A->y = B->y;
-		
-	B->key = key;
-	B->x = x;
-	B->y = y;
-}
-
-void PriorityDec(int x, int y, Heap **heap, int key, int size){
-	int i;
-	//procura o ponto no heap
-	for (i = 0; i < size; i++){
-		if (heap[i]->x == x && heap[i]->y == y){
-			//altera a key e repoe a ordem do heap
-			heap[i]->key = key;
-			FixUp(heap, i);
-			break;
+	for (i = 0; i < h->free; i++){
+		if( SameItem ){
+			index = i;
 		}
 	}
-}
 
-int EmptyHeap (Heap **queue){
-	return (queue[0] == NULL ? 1 : 0);
-}
-
-Heap * HeapDeleteMin(Heap **heap, int *free){
-		//troca primeiro com o último
-		exch(heap[0], heap[*free-1]);
-		//elimina o ultimo
-		/*  FixDown(*free);*/
-		//free(heap[*free-1]);
-		//heap[*free-1] = NULL;
-		
-		return heap[*free];
-}
-
-void FixDown (Heap **queue, int Idx){
-	//enquanto o pai for menos prioritario que o filho
-	while(Idx > 0 && lessPri(queue[(Idx-1)/2], queue[Idx])){
-		exch( queue[Idx], queue[(Idx-1)/2]);
-		//sobe no acervo
-		Idx = (Idx-1)/2;
+	//se aumentar a prioridade faz FixUp
+	if ( (h->less)((h->heapdata)[index], item) ){
+		free ((h->heapdata)[index]);
+		(h->heapdata)[index] = item;
+		FixUp(h, index);
+	} else
+	{ //se diminuir a prioridade faz FixDown
+		free((h->heapdata)[index]);
+		(h->heapdata)[index] = item;
+		FixDown(h, index);
 	}
+}*/
+
+void ChangePri(Heap *h, int index, Item item)
+{
+	//se o index não estiver dentro dos limites
+	if (index > h->free - 1)
+	{
+		exit(0);
+	}
+
+	if (index == -1) exit(0);
+
+	//se aumentar a prioridade faz FixUp
+	if ((h->less)((h->heapdata)[index], item))
+	{
+		free((h->heapdata)[index]);
+		(h->heapdata)[index] = item;
+		FixUp(h, index);
+	}
+	else
+	{ //se diminuir a prioridade faz FixDown
+		free((h->heapdata)[index]);
+		(h->heapdata)[index] = item;
+		FixDown(h, index);
+	}
+} 
+
+int EmptyHeap(Heap *h)
+{
+	return ((h->heapdata)[0] == NULL ? 1 : 0);
+}
+
+/*  void HeapDeleteMin(Heap *h)
+{
+	//troca primeiro com o último
+	exch(heap[0], heap[*free - 1]);
+	//repoe a condiçao de heap
+	FixDown(heap, 0, *free - 1);
+	//elimina o ultimo
+	free(heap[*free - 1]);
+	heap[*free - 1] = NULL;
+	*free = *free - 1;
+	return coord; 
+}
+
+ void printQueue(Heap **queue, int size)
+{
+	int i;
+	for (i = 0; i < size; i++)
+	{
+		printf("%d\n", queue[i]->key);
+	}
+} */ 
+
+
+Item getItem (Heap* h, int idx){
+	if (idx > (h->free)-1) exit(0);	
+	return h->heapdata[idx];
+}
+
+int getFree(Heap * h){
+	return h->free;
 }

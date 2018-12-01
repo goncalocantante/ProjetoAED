@@ -6,7 +6,6 @@
 
 #include "queue.h"
 
-
 typedef struct {
   int nlinhas;
   int ncolunas;
@@ -21,15 +20,25 @@ typedef struct {
   int custo;
 }solucao;
 
+typedef struct _vertex{
+  int key;
+  int x,y;  
+}vertex;
 
-problema *ler_problema (FILE *);
+void InsertAdjVert(problema, int , int , Heap *);
+int CompareKey(Item, Item);
+Item CreateVertex(int , int , int);
+int FindIndex(Heap *, int, int);
+
+
+problema *ler_problema(FILE *);
 int validate_problem(problema);
 int validate_points(problema);
 void free_problema(problema *);
-solucao* solve_problem(problema);
-solucao *modoB (problema);
-void modoA ();
-void InsertAdjVert(problema , int , int , Heap** , int *, int );
+solucao *solve_problem(problema);
+solucao *modoB(problema);
+void modoA(problema);
+//void InsertAdjVert(problema, int, int, Heap **, int *, int);
 
 
 #endif

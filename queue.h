@@ -2,19 +2,24 @@
 #define QUEUE_H
 
 #include "utils.h"
-#include <stdbool.h>
 
-typedef struct {
-	int key;
-	int x,y;
-} Heap;
+typedef struct _heap Heap;
 
+Heap *HeapInit(int (*less)(Item, Item), int );
+void HeapInsert(Heap *, Item);
+void FixUp(Heap *, int);
+void FixDown(Heap *, int);
+void ChangePri(Heap *h, int, Item);
+int EmptyHeap(Heap *);
+Item getItem(Heap *, int);
+int getFree(Heap *h);
 
-Heap** HeapInit (int);
-void HeapInsert (Heap** , Heap *, int *, int );
-void FixUp (Heap **, int );
+/* void FixUp(Heap **, int);
 void exch(Heap *, Heap *);
-int EmptyHeap (Heap **);
-void PriorityDec(int , int , Heap **, int , int );
+int EmptyHeap(Heap **);
+void PriorityDec(int, int, Heap **, int, int);
+void printQueue(Heap **, int);
+void FixDown(Heap **, int, int);
+//int *HeapDeleteMin(Heap **, int *); */
 
 #endif

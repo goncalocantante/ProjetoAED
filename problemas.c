@@ -78,7 +78,6 @@ void free_problema(problema *estrutura){
   free(estrutura);
 }
 
-
 solucao *solve_problem(problema prob){
   solucao *sol = NULL;
 
@@ -87,20 +86,19 @@ solucao *solve_problem(problema prob){
     sol->valido = -1;
     sol->custo = 0;
   }
-  else if (prob.modo == 'A') {
-     modoA(prob);
-  }
+  //else if (prob.modo == 'A') {
+      modoA(prob);
+  //}
   return sol;
 }
 
 //algoritmo de Dijkstra
 void modoA (problema prob){
-  Heap** queue = NULL;
-  int v, w, hsize, free = 0, x = prob.pontos[0][0], y = prob.pontos[0][1];
+  Heap* heap = NULL;
+  int v, w, x = prob.pontos[0][0], y = prob.pontos[0][1];
   int **wt, **st;
 
   //há possibilidade de fazer isto logo quando lemos o problema e evitamos fazer for for 
-  hsize = prob.nlinhas*prob.ncolunas;
   //inicializa as matrizes do peso e do vértice anterior
   wt = (int **)checked_malloc(sizeof(int*)*prob.nlinhas);
   st = (int **)checked_malloc(sizeof(int*)*prob.nlinhas);
@@ -114,43 +112,59 @@ void modoA (problema prob){
     }
   }
   //inicializa o Heap
-  queue = HeapInit(hsize);
+  heap = HeapInit(CompareKey, (prob.ncolunas*prob.nlinhas));
   //insere no heap todos os vértices adjacentes
-  InsertAdjVert(prob, prob.pontos[0][0], prob.pontos[0][1], queue, &free, hsize);
-  wt[x][y] = 0;
-  PriorityDec(x, y, queue, 0, free);
-/*   while(!EmptyHeap(queue)){
+  InsertAdjVert(prob, prob.pontos[0][0], prob.pontos[0][1], heap);
+  wt[x][y] = 0;  
+  //criar um item para substituir o que queremos atualizar
+  ChangePri(heap, FindIndex(heap, x, y),CreateVertex(x, y, 0));
+   /*printQueue(queue, free);
+   while(EmptyHeap(queue) == 0){
     //falta inserir o ponto inicial na fila
-    coord = delminie
+    //coord = HeapDeleteMin(queue, &free);
     if(wt[coord[0]][coord[1]] != INT_MAX/2){
-
+        //atualiza o wt
+        //atualiza o st
+        PriorityDec(x, y, queue, 0, free); //atualiza o heap
     }
-
   } */
 }
 
-//to be done
-void InsertAdjVert(problema prob, int x, int y, Heap** queue, int *free, int size){
-  Heap *I = NULL;
+Item CreateVertex(int x, int y, int key){ 
+  vertex * vert = (vertex*)checked_malloc(sizeof(vertex));
+  vert->key = key;
+  vert->x = x;
+  vert->y = y;
+  return vert;
+}
+
+void InsertAdjVert(problema prob, int x, int y, Heap* heap){
+  vertex *I = NULL;
+
+  //insere o vertice onde está
+  I = (vertex*)checked_malloc(sizeof(vertex));
+  I->key = INT_MAX / 2;
+  I->x = x;
+  I->y = y;
+  HeapInsert(heap, I);
   //verificar para cima
   if (x > 1){
     if (y < prob.ncolunas-1){ //verificar cima, direita
       if (prob.mapa[x-2][y+1] != 0) {   //verifica se a celula que vai aceder é acessivel
-        I = (Heap*)checked_malloc(sizeof(Heap));
+        I = (vertex*)checked_malloc(sizeof(vertex));
         I->key = INT_MAX/2;
         I->x = x-2;
         I->y = y+1;
-        HeapInsert (queue, I, free, size);
-        
+        HeapInsert (heap, I);
       }
     }
     if (y > 0){                     //verificar cima,esquerda
       if (prob.mapa[x-2][y-1] != 0) {
-        I = (Heap*)checked_malloc(sizeof(Heap));
+        I = (vertex*)checked_malloc(sizeof(vertex));
         I->key = INT_MAX/2;
         I->x = x-2;
         I->y = y-1;
-        HeapInsert (queue, I, free, size);
+        HeapInsert (heap, I);
       }
     }
   }
@@ -158,21 +172,21 @@ void InsertAdjVert(problema prob, int x, int y, Heap** queue, int *free, int siz
   if (x < prob.nlinhas-2) {
     if (y < prob.ncolunas-1){ //verificar baixo, direita
       if (prob.mapa[x+2][y+1] != 0){
-        I = (Heap*)checked_malloc(sizeof(Heap));
+        I = (vertex*)checked_malloc(sizeof(vertex));
         I->key = INT_MAX/2;
         I->x = x+2;
         I->y = y+1;
-        HeapInsert (queue, I, free, size);
+        HeapInsert (heap, I);
  
       }
     }
     if (y > 0){             //verificar baixo, esquerda
       if (prob.mapa[x+2][y-1] != 0) {
-        I = (Heap*)checked_malloc(sizeof(Heap));
+        I = (vertex*)checked_malloc(sizeof(vertex));
         I->key = INT_MAX/2;
         I->x = x+2;
         I->y = y-1;
-        HeapInsert (queue, I, free, size);
+        HeapInsert (heap, I);
       }
     }
   }
@@ -180,20 +194,20 @@ void InsertAdjVert(problema prob, int x, int y, Heap** queue, int *free, int siz
   if (y > 1){
     if (x < prob.nlinhas-1){ //verificar esquerda, baixo
       if (prob.mapa[x+1][y-2] != 0) {
-        I = (Heap*)checked_malloc(sizeof(Heap));
+        I = (vertex*)checked_malloc(sizeof(vertex));
         I->key = INT_MAX/2;
         I->x = x+1;
         I->y = y-2;
-        HeapInsert (queue, I, free, size);
+        HeapInsert (heap, I);
       }
     }
     if (x > 0){               //verificar esquerda, cima
       if (prob.mapa[x-1][y-2] != 0) {
-        I = (Heap*)checked_malloc(sizeof(Heap));
+        I = (vertex*)checked_malloc(sizeof(vertex));
         I->key = INT_MAX/2;
-        I->x = x-11;
+        I->x = x-1;
         I->y = y-2;
-        HeapInsert (queue, I, free, size);
+        HeapInsert(heap, I);
       }
     }
   }
@@ -201,23 +215,44 @@ void InsertAdjVert(problema prob, int x, int y, Heap** queue, int *free, int siz
   if (y < prob.ncolunas-2){
     if (x < prob.nlinhas-1){ //verificar direita, baixo
       if (prob.mapa[x+1][y+2] != 0) {
-        I = (Heap*)checked_malloc(sizeof(Heap));
+        I = (vertex*)checked_malloc(sizeof(vertex));
         I->key = INT_MAX/2;
         I->x = x+1;
         I->y = y+2;
-        HeapInsert (queue, I, free, size);
+        HeapInsert (heap, I);
       }
     }
     if (x > 0){              //verificar direita, cima
       if (prob.mapa[x-1][y+2] != 0) {
-        I = (Heap*)checked_malloc(sizeof(Heap));
+        I = (vertex*)checked_malloc(sizeof(vertex));
         I->key = INT_MAX/2;
         I->x = x-1;
         I->y = y+2;
-        HeapInsert (queue, I, free, size);
+        HeapInsert (heap, I);
       }
     }
-  }
- 
+  }   
+}
 
+int FindIndex (Heap* h, int x, int y){
+  vertex * V;
+  for(int i = 0; i < getFree(h); i++){
+    V = getItem(h, i);
+    if (V->x == x && V->y == y) return i;
+  }
+  exit(0);
+}
+
+int CmpVertexes (Item a, Item b){
+  vertex *A = (vertex *)a, *B = (vertex *)b;
+  if ((A->key == B->key) && (A->x == B->x) && (A->y == B->y)) 
+    return 1;
+  else 
+    return 0;
+}
+
+int CompareKey(Item A, Item  B)
+{
+  vertex *a = (vertex *) A, *b = (vertex *) B;
+  return (a->key > b->key ? 1 : 0);
 }
