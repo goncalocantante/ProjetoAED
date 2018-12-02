@@ -4,6 +4,16 @@
 #include "utils.h"
 #include "problemas.h"
 
+//Para o vetor das coordenadas dos pontos adjacentes
+#define Left2Up 0
+#define Left2Down 1
+#define Right2Up 2
+#define Right2Down 3
+#define Up2Left 4
+#define Up2Right 5
+#define Down2Left 6
+#define Down2Right 7
+
 
 problema *ler_problema(FILE *fp){
   int i = 0, j = 0, n_scan = 0;
@@ -96,49 +106,70 @@ solucao *solve_problem(problema prob){
 void modoA (problema prob){
   Heap* heap = NULL;
   int v, w, x = prob.pontos[0][0], y = prob.pontos[0][1];
-  int **wt, **st;
+  int **wt, ***st, VertsAdjs[2][8];
+  vertex *V;
 
   //há possibilidade de fazer isto logo quando lemos o problema e evitamos fazer for for 
   //inicializa as matrizes do peso e do vértice anterior
   wt = (int **)checked_malloc(sizeof(int*)*prob.nlinhas);
-  st = (int **)checked_malloc(sizeof(int*)*prob.nlinhas);
+  st = (int ***)checked_malloc(sizeof(int**)*prob.nlinhas);
   for (v = 0; v < prob.nlinhas; v++){
-    //acho que tem de se alocar para float o wt, mas faço isso depois
     wt[v] = (int*)checked_malloc(sizeof(int)*prob.ncolunas);
-    st[v] = (int*)checked_malloc(sizeof(int)*prob.ncolunas);
+    st[v] = (int**)checked_malloc(sizeof(int*)*prob.ncolunas);
     for (w = 0; w < prob.ncolunas; w++){
-      st[v][w] = -1;
+      st[v][w] = (int*)checked_malloc(sizeof(int)*2);
+      //[v][w][0] = x  || [v][w][1] = y
+      st[v][w][0] = -1;
+      st[v][w][1] = -1;
       wt[v][w] = INT_MAX/2; 
     }
   }
   //inicializa o Heap
   heap = HeapInit(CompareKey, (prob.ncolunas*prob.nlinhas));
-  //insere no heap todos os vértices adjacentes
-  InsertAdjVert(prob, prob.pontos[0][0], prob.pontos[0][1], heap);
-  wt[x][y] = 0;  
-  //criar um item para substituir o que queremos atualizar
+  //insere no heap todos os vértices
+  InsertAll(prob, prob.nlinhas, prob.ncolunas, heap);
+  wt[x][y] = 0; 
+  //altera a prioridade no heap
   ChangePri(heap, FindIndex(heap, x, y),CreateVertex(x, y, 0));
-   /*printQueue(queue, free);
-   while(EmptyHeap(queue) == 0){
-    //falta inserir o ponto inicial na fila
-    //coord = HeapDeleteMin(queue, &free);
-    if(wt[coord[0]][coord[1]] != INT_MAX/2){
-        //atualiza o wt
-        //atualiza o st
-        PriorityDec(x, y, queue, 0, free); //atualiza o heap
+  //printQueue(heap);
+  while(EmptyHeap(heap) == 0){
+    V = getMostPri(heap);
+    if (V->key != INT_MAX/2)
+    {
+      GetAdjs(prob, V->x, V->y, VertsAdjs);
+      //ve todos os adjacentes
+      for (int i = 0; i < 8; i++)
+      {
+        if (VertsAdjs[0][i] != -5)
+        {
+          //coordenadas do vértice adjacente
+          x = V->x + VertsAdjs[0][i];
+          y = V->y + VertsAdjs[1][i];
+          //relaxa a aresta
+          if (wt[x][y] > (V->key + prob.mapa[x][y]))
+          {
+            wt[x][y] = V->key + prob.mapa[x][y];
+            //atualizar o st
+            st[x][y][0] = V->x;
+            st[x][y][1] = V->y;
+            ChangePri(heap, FindIndex(heap, x, y), CreateVertex(x, y, wt[x][y]));
+          }
+        }
+      }
     }
-  } */
+    HeapDeleteMostPri(heap);
+  } 
 }
 
 Item CreateVertex(int x, int y, int key){ 
   vertex * vert = (vertex*)checked_malloc(sizeof(vertex));
   vert->key = key;
   vert->x = x;
-  vert->y = y;
+  vert->y = y; 
   return vert;
 }
 
-void InsertAdjVert(problema prob, int x, int y, Heap* heap){
+/* void InsertAdjVert(problema prob, int x, int y, Heap* heap){
   vertex *I = NULL;
 
   //insere o vertice onde está
@@ -232,27 +263,155 @@ void InsertAdjVert(problema prob, int x, int y, Heap* heap){
       }
     }
   }   
+} */
+
+/* void InsertAdjVert(problema prob, int x, int y, Heap *heap, int adjs[][8]){
+  vertex *I = NULL;
+  for(int i = 0; i < 8; i++){
+    if (adjs[0][i] != -1){
+      I = CreateVertex(x, y, INT_MAX/2);
+      HeapInsert(heap, I);
+    }
+  }
+} */
+
+void InsertAll(problema prob, int linhas, int colunas, Heap *heap){
+  vertex *I = NULL;
+  for (int i = 0; i < linhas; i++){
+    for (int j = 0; j < colunas; j++){
+      if (prob.mapa[i][j] != 0){
+        I = CreateVertex(i, j, INT_MAX / 2);
+        HeapInsert(heap, I);
+      }
+    }   
+  }
 }
 
-int FindIndex (Heap* h, int x, int y){
-  vertex * V;
-  for(int i = 0; i < getFree(h); i++){
+void GetAdjs(problema prob, int x, int y, int adj[][8] )
+{
+  // INICIALIZAR A -5 TUDO
+  for (int i = 0; i < 8; i++)
+  {
+    adj[0][i] = -5;
+    adj[1][i] = -5;
+  }
+  //verifica para cima
+  if (x > 1)
+  {
+    if (y < prob.ncolunas - 1)
+    { //verificar cima, direita
+      if (prob.mapa[x - 2][y + 1] != 0)
+      { //verifica se a celula que vai aceder é acessivel
+        adj[0][Right2Up] = -2;
+        adj[1][Right2Up] = 1;
+      }
+    }
+    if (y > 0)
+    { //verificar cima,esquerda
+      if (prob.mapa[x - 2][y - 1] != 0)
+      {
+        adj[0][Left2Up] = -2;
+        adj[1][Left2Up] = -1;
+      }
+    }
+
+  }
+  //verificar para baixo
+  if (x < prob.nlinhas - 2)
+  {
+    if (y < prob.ncolunas - 1)
+    { //verificar baixo, direita
+      if (prob.mapa[x + 2][y + 1] != 0)
+      {
+        adj[0][Right2Down] = 2;
+        adj[1][Right2Down] = 1;
+      }
+    }
+    if (y > 0)
+    { //verificar baixo, esquerda
+      if (prob.mapa[x + 2][y - 1] != 0)
+      {
+        adj[0][Left2Down] = 2;
+        adj[1][Left2Down] = -1;
+      }
+    }
+  }
+  //verificar para esquerda
+  if (y > 1)
+  {
+    if (x < prob.nlinhas - 1)
+    { //verificar esquerda, baixo
+      if (prob.mapa[x + 1][y - 2] != 0)
+      {
+        adj[0][Down2Left] = 1;
+        adj[1][Down2Left] = -2;
+      }
+    }
+    if (x > 0)
+    { //verificar esquerda, cima
+      if (prob.mapa[x - 1][y - 2] != 0)
+      {
+        adj[0][Up2Left] = -1;
+        adj[1][Up2Left] = -2;
+      }
+    }
+  }
+  //verificar para a direita
+  if (y < prob.ncolunas - 2)
+  {
+    if (x < prob.nlinhas - 1)
+    { //verificar direita, baixo
+      if (prob.mapa[x + 1][y + 2] != 0)
+      {
+        adj[0][Down2Right] = 1;
+        adj[1][Down2Right] = 2;
+      }
+    }
+    if (x > 0)
+    { //verificar direita, cima
+      if (prob.mapa[x - 1][y + 2] != 0)
+      {
+        adj[0][Up2Right] = -1;
+        adj[1][Up2Right] = 2;
+      }
+    }
+  }
+}
+
+int FindIndex(Heap * h, int x, int y)
+{
+  vertex *V;
+  for (int i = 0; i < getFree(h); i++)
+  {
     V = getItem(h, i);
-    if (V->x == x && V->y == y) return i;
+    if (V->x == x && V->y == y)
+      return i;
   }
   exit(0);
 }
 
-int CmpVertexes (Item a, Item b){
+int CmpVertexes(Item a, Item b)
+{
   vertex *A = (vertex *)a, *B = (vertex *)b;
-  if ((A->key == B->key) && (A->x == B->x) && (A->y == B->y)) 
+  if ((A->key == B->key) && (A->x == B->x) && (A->y == B->y))
     return 1;
-  else 
+  else
     return 0;
 }
 
-int CompareKey(Item A, Item  B)
+int CompareKey(Item A, Item B)
 {
-  vertex *a = (vertex *) A, *b = (vertex *) B;
+  vertex *a = (vertex *)A, *b = (vertex *)B;
   return (a->key > b->key ? 1 : 0);
+}
+
+void printQueue(Heap * h)
+{
+  int i, size = getFree(h);
+  vertex *V;
+  for (i = 0; i < size; i++)
+  {
+    V = getItem(h, i);
+    printf("%d\n", V->key);
+  }
 }

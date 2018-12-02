@@ -13,13 +13,13 @@ void ChangePri(Heap *h, int, Item);
 int EmptyHeap(Heap *);
 Item getItem(Heap *, int);
 int getFree(Heap *h);
-
+Item getMostPri(Heap *);
+void HeapDeleteMostPri(Heap *);
 /* void FixUp(Heap **, int);
 void exch(Heap *, Heap *);
 int EmptyHeap(Heap **);
 void PriorityDec(int, int, Heap **, int, int);
 void printQueue(Heap **, int);
-void FixDown(Heap **, int, int);
-//int *HeapDeleteMin(Heap **, int *); */
+void FixDown(Heap **, int, int); */
 
 #endif

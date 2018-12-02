@@ -25,11 +25,14 @@ typedef struct _vertex{
   int x,y;  
 }vertex;
 
-void InsertAdjVert(problema, int , int , Heap *);
+//void InsertAdjVert(problema, int , int , Heap *);
 int CompareKey(Item, Item);
 Item CreateVertex(int , int , int);
 int FindIndex(Heap *, int, int);
+void printQueue(Heap *);
+void InsertAll(problema , int , int , Heap *);
 
+void GetAdjs(problema, int , int , int [][8]);
 
 problema *ler_problema(FILE *);
 int validate_problem(problema);

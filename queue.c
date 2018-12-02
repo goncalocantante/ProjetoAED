@@ -76,32 +76,6 @@ void FixDown(Heap *h, int Idx)
 	}
 }
 
-/* void ChangePri(Heap *h, int index , Item item)
-{	
-	//se o index não estiver dentro dos limites
-	if (index > h->free-1){
-		exit(0);
-	}
-
-	for (i = 0; i < h->free; i++){
-		if( SameItem ){
-			index = i;
-		}
-	}
-
-	//se aumentar a prioridade faz FixUp
-	if ( (h->less)((h->heapdata)[index], item) ){
-		free ((h->heapdata)[index]);
-		(h->heapdata)[index] = item;
-		FixUp(h, index);
-	} else
-	{ //se diminuir a prioridade faz FixDown
-		free((h->heapdata)[index]);
-		(h->heapdata)[index] = item;
-		FixDown(h, index);
-	}
-}*/
-
 void ChangePri(Heap *h, int index, Item item)
 {
 	//se o index não estiver dentro dos limites
@@ -132,28 +106,33 @@ int EmptyHeap(Heap *h)
 	return ((h->heapdata)[0] == NULL ? 1 : 0);
 }
 
-/*  void HeapDeleteMin(Heap *h)
+void HeapDeleteMostPri(Heap *h)
 {
+	Item t;
 	//troca primeiro com o último
-	exch(heap[0], heap[*free - 1]);
+	t = (h->heapdata)[0];			   	   
+	(h->heapdata)[0]= (h->heapdata)[(h->free)-1]; 
+	(h->heapdata)[(h->free) - 1] = t;
 	//repoe a condiçao de heap
-	FixDown(heap, 0, *free - 1);
+	FixDown(h, (h->free) - 1);
 	//elimina o ultimo
-	free(heap[*free - 1]);
-	heap[*free - 1] = NULL;
-	*free = *free - 1;
-	return coord; 
+	free((h->heapdata)[(h->free) - 1]);
+	(h->heapdata)[(h->free) - 1] = NULL;
+	(h->free)--;
 }
 
- void printQueue(Heap **queue, int size)
+Item getMostPri(Heap *heap){
+	return (heap->heapdata[0]);
+}
+
+/*void printQueue(Heap *h)
 {
 	int i;
 	for (i = 0; i < size; i++)
 	{
 		printf("%d\n", queue[i]->key);
 	}
-} */ 
-
+} */
 
 Item getItem (Heap* h, int idx){
 	if (idx > (h->free)-1) exit(0);	
@@ -162,4 +141,9 @@ Item getItem (Heap* h, int idx){
 
 int getFree(Heap * h){
 	return h->free;
+}
+
+int getSize(Heap *h)
+{
+	return h->size;
 }
