@@ -84,11 +84,11 @@ void ChangePri(Heap *h, int index, Item item)
 		exit(0);
 	}
 
-	if (index == -1) exit(0);
+  	if (index == -1) { printf("Indicie nao encontrado"); exit(0); }  
 
 	//se aumentar a prioridade faz FixUp
 	if ((h->less)((h->heapdata)[index], item))
-	{
+	{	
 		free((h->heapdata)[index]);
 		(h->heapdata)[index] = item;
 		FixUp(h, index);
@@ -111,15 +111,16 @@ void HeapDeleteMostPri(Heap *h)
 	Item t;
 	//troca primeiro com o último
 	t = (h->heapdata)[0];			   	   
-	(h->heapdata)[0]= (h->heapdata)[(h->free)-1]; 
+	(h->heapdata)[0] = (h->heapdata)[(h->free)-1]; 
 	(h->heapdata)[(h->free) - 1] = t;
-	//repoe a condiçao de heap
-	FixDown(h, (h->free) - 1);
 	//elimina o ultimo
 	free((h->heapdata)[(h->free) - 1]);
 	(h->heapdata)[(h->free) - 1] = NULL;
 	(h->free)--;
+	//repoe a condiçao de heap
+	FixDown(h, 0);
 }
+
 
 Item getMostPri(Heap *heap){
 	return (heap->heapdata[0]);

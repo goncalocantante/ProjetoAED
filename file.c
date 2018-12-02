@@ -35,7 +35,7 @@ char* CreateOutputFileName(char *raw_name){
   for (i = len - strlen(".cities"); i <= len; i++) { // 7 = strlen de .cities
     file_out[i] = '\0';
   }
-  strcat(file_out,".valid");
+  strcat(file_out,".walks");
 
   return file_out;
 }

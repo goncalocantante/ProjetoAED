@@ -97,13 +97,59 @@ solucao *solve_problem(problema prob){
     sol->custo = 0;
   }
   //else if (prob.modo == 'A') {
-      modoA(prob);
+      modoA(prob); 
   //}
   return sol;
 }
 
+//Encontra o melhor caminho entre A e B
+//Retorna o numero de pontos do caminho
+void DijkstraMagic(problema prob, Heap * heap, int **wt, int ***st,int Xa, int Ya, int Xb, int Yb){
+  vertex *V;
+  int x, y;
+  int VertsAdjs[2][8];
+
+  wt[Xa][Ya] = 0;
+  //altera a prioridade no heap
+  ChangePri(heap, FindIndex(heap, Xa, Ya), CreateVertex(Xa, Ya, 0));
+
+  while (EmptyHeap(heap) == 0)
+  {
+    printf("!!!!!!!!!!!!!!!\n");
+    printQueue(heap);
+    V = getMostPri(heap);
+    if (V->key != INT_MAX / 2)
+    {
+      GetAdjs(prob, V->x, V->y, VertsAdjs);
+      //ve todos os adjacentes
+      for (int i = 0; i < 8; i++)
+      {
+        //se as coordenadas do vertice adjacente forem válidas
+        if (VertsAdjs[0][i] != -5)
+        {
+          //coordenadas do vértice adjacente
+          x = V->x + VertsAdjs[0][i];
+          y = V->y + VertsAdjs[1][i];
+          //relaxa a aresta
+          if (wt[x][y] > (V->key + prob.mapa[x][y])) //isto está correto tmb
+          {
+            wt[x][y] = V->key + prob.mapa[x][y];
+            //atualizar o st
+            st[x][y][0] = V->x;
+            st[x][y][1] = V->y;
+            //o indice está correto
+            ChangePri(heap, FindIndex(heap, x, y), CreateVertex(x, y, wt[x][y]));
+          }
+        }
+      }
+    }
+    HeapDeleteMostPri(heap);
+  }
+  Path_AtoB(st, prob, Xb, Yb, Xa, Ya);
+}
+
 //algoritmo de Dijkstra
-void modoA (problema prob){
+/* void modoA (problema prob){
   Heap* heap = NULL;
   int v, w, x = prob.pontos[0][0], y = prob.pontos[0][1];
   int **wt, ***st, VertsAdjs[2][8];
@@ -133,32 +179,66 @@ void modoA (problema prob){
   ChangePri(heap, FindIndex(heap, x, y),CreateVertex(x, y, 0));
   //printQueue(heap);
   while(EmptyHeap(heap) == 0){
+    printf("!!!!!!!!!!!!!!!\n");
+    printQueue(heap);
     V = getMostPri(heap);
     if (V->key != INT_MAX/2)
     {
       GetAdjs(prob, V->x, V->y, VertsAdjs);
       //ve todos os adjacentes
       for (int i = 0; i < 8; i++)
-      {
+      { 
+        //se as coordenadas do vertice adjacente forem válidas
         if (VertsAdjs[0][i] != -5)
         {
           //coordenadas do vértice adjacente
           x = V->x + VertsAdjs[0][i];
           y = V->y + VertsAdjs[1][i];
           //relaxa a aresta
-          if (wt[x][y] > (V->key + prob.mapa[x][y]))
+          if (wt[x][y] > (V->key + prob.mapa[x][y]))  //isto está correto tmb
           {
             wt[x][y] = V->key + prob.mapa[x][y];
             //atualizar o st
             st[x][y][0] = V->x;
             st[x][y][1] = V->y;
+            //o indice está correto
             ChangePri(heap, FindIndex(heap, x, y), CreateVertex(x, y, wt[x][y]));
           }
         }
       }
     }
     HeapDeleteMostPri(heap);
-  } 
+  }
+} */
+
+void modoA (problema prob){
+  Heap *heap = NULL;
+  int v, w;
+  int **wt, ***st;
+
+  //inicializa as matrizes do peso e do vértice anterior
+  wt = (int **)checked_malloc(sizeof(int *) * prob.nlinhas);
+  st = (int ***)checked_malloc(sizeof(int **) * prob.nlinhas);
+  for (v = 0; v < prob.nlinhas; v++)
+  {
+    wt[v] = (int *)checked_malloc(sizeof(int) * prob.ncolunas);
+    st[v] = (int **)checked_malloc(sizeof(int *) * prob.ncolunas);
+    for (w = 0; w < prob.ncolunas; w++)
+    {
+      st[v][w] = (int *)checked_malloc(sizeof(int) * 2);
+      //[v][w][0] = x  || [v][w][1] = y
+      st[v][w][0] = -1;
+      st[v][w][1] = -1;
+      wt[v][w] = INT_MAX / 2;
+    }
+  }
+
+  //inicializa o Heap
+  heap = HeapInit(CompareKey, (prob.ncolunas * prob.nlinhas));
+  //insere no heap todos os vértices
+  InsertAll(prob, prob.nlinhas, prob.ncolunas, heap);
+
+  DijkstraMagic(prob, heap, wt, st, prob.pontos[0][0], prob.pontos[0][1], prob.pontos[1][0], prob.pontos[1][1]);
 }
 
 Item CreateVertex(int x, int y, int key){ 
@@ -168,112 +248,6 @@ Item CreateVertex(int x, int y, int key){
   vert->y = y; 
   return vert;
 }
-
-/* void InsertAdjVert(problema prob, int x, int y, Heap* heap){
-  vertex *I = NULL;
-
-  //insere o vertice onde está
-  I = (vertex*)checked_malloc(sizeof(vertex));
-  I->key = INT_MAX / 2;
-  I->x = x;
-  I->y = y;
-  HeapInsert(heap, I);
-  //verificar para cima
-  if (x > 1){
-    if (y < prob.ncolunas-1){ //verificar cima, direita
-      if (prob.mapa[x-2][y+1] != 0) {   //verifica se a celula que vai aceder é acessivel
-        I = (vertex*)checked_malloc(sizeof(vertex));
-        I->key = INT_MAX/2;
-        I->x = x-2;
-        I->y = y+1;
-        HeapInsert (heap, I);
-      }
-    }
-    if (y > 0){                     //verificar cima,esquerda
-      if (prob.mapa[x-2][y-1] != 0) {
-        I = (vertex*)checked_malloc(sizeof(vertex));
-        I->key = INT_MAX/2;
-        I->x = x-2;
-        I->y = y-1;
-        HeapInsert (heap, I);
-      }
-    }
-  }
-  //verificar para baixo
-  if (x < prob.nlinhas-2) {
-    if (y < prob.ncolunas-1){ //verificar baixo, direita
-      if (prob.mapa[x+2][y+1] != 0){
-        I = (vertex*)checked_malloc(sizeof(vertex));
-        I->key = INT_MAX/2;
-        I->x = x+2;
-        I->y = y+1;
-        HeapInsert (heap, I);
- 
-      }
-    }
-    if (y > 0){             //verificar baixo, esquerda
-      if (prob.mapa[x+2][y-1] != 0) {
-        I = (vertex*)checked_malloc(sizeof(vertex));
-        I->key = INT_MAX/2;
-        I->x = x+2;
-        I->y = y-1;
-        HeapInsert (heap, I);
-      }
-    }
-  }
-  //verificar para esquerda
-  if (y > 1){
-    if (x < prob.nlinhas-1){ //verificar esquerda, baixo
-      if (prob.mapa[x+1][y-2] != 0) {
-        I = (vertex*)checked_malloc(sizeof(vertex));
-        I->key = INT_MAX/2;
-        I->x = x+1;
-        I->y = y-2;
-        HeapInsert (heap, I);
-      }
-    }
-    if (x > 0){               //verificar esquerda, cima
-      if (prob.mapa[x-1][y-2] != 0) {
-        I = (vertex*)checked_malloc(sizeof(vertex));
-        I->key = INT_MAX/2;
-        I->x = x-1;
-        I->y = y-2;
-        HeapInsert(heap, I);
-      }
-    }
-  }
-  //verificar para a direita
-  if (y < prob.ncolunas-2){
-    if (x < prob.nlinhas-1){ //verificar direita, baixo
-      if (prob.mapa[x+1][y+2] != 0) {
-        I = (vertex*)checked_malloc(sizeof(vertex));
-        I->key = INT_MAX/2;
-        I->x = x+1;
-        I->y = y+2;
-        HeapInsert (heap, I);
-      }
-    }
-    if (x > 0){              //verificar direita, cima
-      if (prob.mapa[x-1][y+2] != 0) {
-        I = (vertex*)checked_malloc(sizeof(vertex));
-        I->key = INT_MAX/2;
-        I->x = x-1;
-        I->y = y+2;
-        HeapInsert (heap, I);
-      }
-    }
-  }   
-} */
-
-/* void InsertAdjVert(problema prob, int x, int y, Heap *heap, int adjs[][8]){
-  vertex *I = NULL;
-  for(int i = 0; i < 8; i++){
-    if (adjs[0][i] != -1){
-      I = CreateVertex(x, y, INT_MAX/2);
-      HeapInsert(heap, I);
-    }
-  }
-} */
 
 void InsertAll(problema prob, int linhas, int colunas, Heap *heap){
   vertex *I = NULL;
@@ -285,6 +259,20 @@ void InsertAll(problema prob, int linhas, int colunas, Heap *heap){
       }
     }   
   }
+}
+
+void Path_AtoB(int ***st, problema prob, int Xb, int Yb, int Xa, int Ya)
+{
+
+  if (Xb >= prob.nlinhas || Yb >= prob.ncolunas)
+    exit(0);
+  //Para de chamar recursivamente quando chega ao segundo ponto do percurso 
+  if ((st[Xb][Yb][0] != Xa) || (st[Xb][Yb][1] != Ya))
+  {
+    Path_AtoB(st, prob, st[Xb][Yb][0], st[Xb][Yb][1], Xa, Ya);
+  }
+  //imprime o ponto anterior 
+  printf("%d %d \n", st[Xb][Yb][0], st[Xb][Yb][1]);
 }
 
 void GetAdjs(problema prob, int x, int y, int adj[][8] )
@@ -388,15 +376,6 @@ int FindIndex(Heap * h, int x, int y)
       return i;
   }
   exit(0);
-}
-
-int CmpVertexes(Item a, Item b)
-{
-  vertex *A = (vertex *)a, *B = (vertex *)b;
-  if ((A->key == B->key) && (A->x == B->x) && (A->y == B->y))
-    return 1;
-  else
-    return 0;
 }
 
 int CompareKey(Item A, Item B)
