@@ -15,6 +15,8 @@ Item getItem(Heap *, int);
 int getFree(Heap *h);
 Item getMostPri(Heap *);
 void HeapDeleteMostPri(Heap *);
+Item *getHeapData(Heap *);
+
 /* void FixUp(Heap **, int);
 void exch(Heap *, Heap *);
 int EmptyHeap(Heap **);

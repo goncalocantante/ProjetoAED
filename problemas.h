@@ -18,6 +18,8 @@ typedef struct {
 typedef struct {
   int valido;
   int custo;
+  int n_pontos;
+  int **pontos;
 }solucao;
 
 typedef struct _vertex{
@@ -31,19 +33,18 @@ Item CreateVertex(int , int , int);
 int FindIndex(Heap *, int, int);
 void printQueue(Heap *);
 void InsertAll(problema , int , int , Heap *);
-void Path_AtoB(int ***, problema , int , int , int, int);
+void Path_AtoB(int ***, problema , int , int , int, int, solucao **, int*);
 void GetAdjs(problema, int, int, int[][8]);
 
-void DijkstraMagic(problema prob, Heap *heap, int **wt, int ***st, int Xa, int Ya, int Xb, int Yb);
+void DijkstraMagic(problema prob, int **wt, int ***st, int Xa, int Ya, int Xb, int Yb);
 
 
-problema *ler_problema(FILE *);
+problema *ler_problema(FILE *, int ****, int ***);
 int validate_problem(problema);
 int validate_points(problema);
-void free_problema(problema *);
-solucao *solve_problem(problema);
-void modoA(problema);
-
+void free_problema(problema *, int ***, int **);
+solucao *solve_problem(problema, int ***, int **);
+void modoA(problema, int ***, int **);
 
 
 #endif

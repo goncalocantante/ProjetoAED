@@ -148,3 +148,7 @@ int getSize(Heap *h)
 {
 	return h->size;
 }
+
+Item *getHeapData(Heap* h){
+	return h->heapdata;
+}

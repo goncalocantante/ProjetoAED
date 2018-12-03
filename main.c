@@ -7,6 +7,7 @@ int main(int argc, char *argv[]) {
   problema *prob = NULL;
   solucao *sol = NULL;
   char *file_out;
+  int **wt = NULL, ***st = NULL; 
 
   //testa se o ficheiro é válido
   test_file(argv[1], argc);
@@ -18,15 +19,13 @@ int main(int argc, char *argv[]) {
   fp_out = fopen(file_out, "w");
   if (fp_out == NULL) exit(0);
   //enquanto houver problemas para resolver
-  while ((prob = ler_problema(fp_in)) != NULL) {
-    sol = solve_problem(*prob);
+  while ((prob = ler_problema(fp_in, &st, &wt)) != NULL) {
+    //printf("TAS COMNO\n");
+    sol = solve_problem(*prob, st, wt);
     /* fprintf(fp_out,"%d %d %c %d %d %d\n", prob->nlinhas, prob->ncolunas, prob->modo, prob->npontos, sol->valido, sol->custo);
     free(sol);
     fprintf(fp_out, "\n");*/ 
-
-
-
-    free_problema(prob);
+    free_problema(prob, st, wt);
   }
   fclose(fp_in);
   fclose(fp_out);
