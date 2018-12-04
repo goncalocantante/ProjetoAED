@@ -35,6 +35,7 @@ void printQueue(Heap *);
 void InsertAll(problema , int , int , Heap *);
 void Path_AtoB(FILE *,int ***, int **, problema , int , int , int, int, solucao **, int*);
 void InsertAndRelax_Adjs(Heap *, vertex *, int **, int ***, problema);
+int TrapedPoint(problema, int, int);
 
 void RelaxEdge(Heap *, int **, int ***, problema, vertex *, int, int);
 

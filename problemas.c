@@ -53,21 +53,30 @@ int validate_problem(problema prob){
 
 //verifica se todos os pontos são acessiveis
 int validate_points(problema prob){
-  int i = 0, ponto_valido = 1;
+  for (int i = 0; i < prob.npontos; i++) {
+    //se tiver fora da matriz
+    if ((prob.pontos[i][0] < 0) || (prob.pontos[i][0] >= prob.nlinhas) || (prob.pontos[i][1] >= prob.ncolunas))
+      return 0;
+    //se a casa for inacessivel
+    if (prob.mapa[prob.pontos[i][0]][prob.pontos[i][1]] == 0)
+      return 0;
+    //se tiver rodeado de 0's  
+    if (TrapedPoint(prob, prob.pontos[i][0], prob.pontos[i][1]))
+      return 0;
+  }
+  return 1;
+}
 
-  for (i = 0; i < prob.npontos; i++) {
-    if ((prob.pontos[i][0] < 0) || (prob.pontos[i][0] >= prob.nlinhas) || (prob.pontos[i][1] >= prob.ncolunas)) {
-      ponto_valido = 0;
-      i = prob.npontos;
-      return ponto_valido;
-    }
-    if (prob.mapa[prob.pontos[i][0]][prob.pontos[i][1]] == 0){
-      ponto_valido = 0;
-      i = prob.npontos;
-      return ponto_valido;
+int TrapedPoint (problema P, int x, int y){
+  int Adjs[8][2] = {{1, 2}, {-1, -2}, {-1, 2}, {1, -2}, {2, 1}, {-2, -1}, {2, -1}, {-2, 1}}; 
+  int X, Y;
+  for(int i = 0; i < 8; i++){
+    if ( ( ( (X = Adjs[i][0] + x) >= 0) && (X < P.nlinhas) ) && (((Y = Adjs[i][1] + y) >= 0) && (Y < P.ncolunas))){
+      if (P.mapa[X][Y] != 0) 
+        return 0;
     }
   }
-  return ponto_valido;
+  return 1;     
 }
 
 //liberta memória alocada na estrutura
@@ -119,14 +128,9 @@ void DijkstraMagic(FILE *fp, problema prob, int **wt, int ***st,int Xa, int Ya, 
     }
     //inicializa o Heap
     heap = HeapInit(CompareKey, (prob.ncolunas * prob.nlinhas));
-    //insere no heap todos os vértices
-    //oh boy nao vamos inserir tudo ao mesmo tempo #TODO
-    //InsertAll(prob, prob.nlinhas, prob.ncolunas, heap);
     //Insere o ponto inicial 
     wt[Xa][Ya] = 0;
     HeapInsert(heap, CreateVertex(Xa, Ya, 0));
-    //altera a prioridade
-    //ChangePri(heap, FindIndex(heap, Xa, Ya), CreateVertex(Xa, Ya, 0));
 
     //Enquanto o heap nao ta vazio e enquanto nao encontra a resposta #TODO
     while (EmptyHeap(heap) == 0)
@@ -172,42 +176,6 @@ void InsertAll(problema prob, int linhas, int colunas, Heap *heap){
     }   
   }
 }
-
-/* void Path_AtoB(int ***st, problema prob, int Xb, int Yb, int Xa, int Ya, solucao **S, int *count)
-{
-  static int idx;
-  //coordenadas inacessiveis
-  if( Xb >= prob.nlinhas || Yb >= prob.ncolunas)
-    exit(0);
-  //não há solução
-  if (st[Xb][Yb][0] == -1 || st[Xb][Yb][1] == -1)
-    exit(0);
-  //incrementa o numero de pontos do passeio
-  (*count)++;
-
-  //Para de chamar recursivamente quando chega ao segundo ponto do percurso 
-  if ( (st[Xb][Yb][0] != Xa) || (st[Xb][Yb][1] != Ya) )
-  {
-    Path_AtoB(st, prob, st[Xb][Yb][0], st[Xb][Yb][1], Xa, Ya, S, count);
-  }
-  //já chegamos ao fim
-  if((st[Xb][Yb][0] == Xa) && (st[Xb][Yb][1] == Ya)){
-    idx = 0;
-    (*S) = (solucao *)checked_malloc(sizeof(solucao));
-    (*S)->n_pontos = *count; 
-    (*S)->pontos = (int **)checked_malloc(sizeof(int *) * (*count));
-    for(int i = 0; i < (*count); i++)
-      (*S)->pontos[i] = (int*)checked_malloc(sizeof(int)*2);
-  }
-
-  //printf("Idx %d \n", idx);
-  (*S)->pontos[idx][0] = st[Xb][Yb][0];
-  (*S)->pontos[idx][1] = st[Xb][Yb][1];
-  //imprime o ponto anterior
-  printf("%d %d \n", (*S)->pontos[idx][0], (*S)->pontos[idx][1]);
-  idx ++;
-}
- */
 
 void Path_AtoB(FILE *fp, int ***st, int **wt, problema prob, int Xb, int Yb, int Xa, int Ya, solucao **S, int *count)
 {
