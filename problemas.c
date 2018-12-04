@@ -152,6 +152,7 @@ void DijkstraMagic(problema prob, int **wt, int ***st,int Xa, int Ya, int Xb, in
     free(getHeapData(heap));
     free(heap);
   }
+  sol->custo += wt[Xb][Yb];
   Path_AtoB(st, wt, prob, Xb, Yb, Xa, Ya, sol, idx);
   idx++;
 }
@@ -172,7 +173,6 @@ solucao *modoA (FILE *fp,problema prob, int ***st, int **wt){
   solucao *sol = (solucao *)checked_malloc(sizeof(solucao));
   sol->n_passos = (int *)checked_malloc(sizeof(int) * (prob.npontos - 1));
   sol->passos = (vertex **)checked_malloc(sizeof(vertex *));
-  sol->custo = 0;
   DijkstraMagic(prob, wt, st, prob.pontos[0][0], prob.pontos[0][1], prob.pontos[1][0], prob.pontos[1][1], sol);
   return sol;
 }
@@ -225,7 +225,6 @@ void Path_AtoB(int ***st, int **wt, problema prob, int Xb, int Yb, int Xa, int Y
     {
       S->passos[idx] = (vertex *)checked_malloc(sizeof(vertex) * count);
       S->n_passos[idx] = count;
-      S->custo += wt[Xb][Yb];
     }
     S->passos[idx][aux].x = Xb;
     S->passos[idx][aux].y = Yb;
