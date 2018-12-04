@@ -33,18 +33,19 @@ Item CreateVertex(int , int , int);
 int FindIndex(Heap *, int, int);
 void printQueue(Heap *);
 void InsertAll(problema , int , int , Heap *);
-void Path_AtoB(int ***, problema , int , int , int, int, solucao **, int*);
-void GetAdjs(problema, int, int, int[][8]);
+void Path_AtoB(FILE *,int ***, int **, problema , int , int , int, int, solucao **, int*);
+void InsertAndRelax_Adjs(Heap *, vertex *, int **, int ***, problema);
 
-void DijkstraMagic(problema prob, int **wt, int ***st, int Xa, int Ya, int Xb, int Yb);
+void RelaxEdge(Heap *, int **, int ***, problema, vertex *, int, int);
 
+void DijkstraMagic(FILE *, problema prob, int **wt, int ***st, int Xa, int Ya, int Xb, int Yb);
 
 problema *ler_problema(FILE *, int ****, int ***);
 int validate_problem(problema);
 int validate_points(problema);
 void free_problema(problema *, int ***, int **);
-solucao *solve_problem(problema, int ***, int **);
-void modoA(problema, int ***, int **);
+solucao *solve_problem(FILE *, problema, int ***, int **);
+void modoA(FILE *, problema, int ***, int **);
 
 
 #endif

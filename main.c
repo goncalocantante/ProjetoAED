@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
   //enquanto houver problemas para resolver
   while ((prob = ler_problema(fp_in, &st, &wt)) != NULL) {
     //printf("TAS COMNO\n");
-    sol = solve_problem(*prob, st, wt);
+    sol = solve_problem(fp_out, *prob, st, wt);
     /* fprintf(fp_out,"%d %d %c %d %d %d\n", prob->nlinhas, prob->ncolunas, prob->modo, prob->npontos, sol->valido, sol->custo);
     free(sol);
     fprintf(fp_out, "\n");*/ 
