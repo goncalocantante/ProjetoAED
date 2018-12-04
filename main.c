@@ -22,9 +22,12 @@ int main(int argc, char *argv[]) {
   while ((prob = ler_problema(fp_in, &st, &wt)) != NULL) {
     //printf("TAS COMNO\n");
     sol = solve_problem(fp_out, *prob, st, wt);
-    /* fprintf(fp_out,"%d %d %c %d %d %d\n", prob->nlinhas, prob->ncolunas, prob->modo, prob->npontos, sol->valido, sol->custo);
+    print_sol(fp_out, prob, sol);
+
+
+    fprintf(fp_out,"%d %d %c %d %d %d\n", prob->nlinhas, prob->ncolunas, prob->modo, prob->npontos, sol->valido, sol->custo);
     free(sol);
-    fprintf(fp_out, "\n");*/ 
+    fprintf(fp_out, "\n");
     free_problema(prob, st, wt);
   }
   fclose(fp_in);

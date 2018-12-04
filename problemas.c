@@ -81,8 +81,7 @@ int TrapedPoint (problema P, int x, int y){
 
 //liberta memória alocada na estrutura
 void free_problema(problema *estrutura, int ***st, int **wt){
-  int i, j;
-
+  int i;
   for (i = 0; i < estrutura->nlinhas; i++) {
     free(estrutura->mapa[i]);
   }
@@ -98,22 +97,28 @@ solucao *solve_problem(FILE *fp, problema prob, int ***st, int **wt ){
   solucao *sol = NULL;
 
   if (validate_problem(prob) == 0 || validate_points(prob) == 0) {
-    fprintf(fp, "%d %d %c %d %d %d\n", prob.nlinhas, prob.ncolunas, prob.modo, prob.npontos, -1, 0);
+    solucao *sol = (solucao *)checked_malloc(sizeof(solucao));
+    sol->n_passos = (int *)checked_malloc(sizeof(int));
+    sol->passos = (vertex **)checked_malloc(sizeof(vertex *));
+    sol->n_passos[0] = 0;
+    sol->valido = -1;
+    sol->custo = 0;
   }
   else if (prob.modo == 'A') {
-     modoA(fp ,prob, st, wt); 
+    sol = modoA(fp ,prob, st, wt); 
+  }
+  else if(prob.modo == 'B'){
+    sol = modoB(prob, st, wt);
   }
   return sol;
-
 }
 
 //Encontra o melhor caminho entre A e B
 //Retorna o numero de pontos do caminho
-void DijkstraMagic(FILE *fp, problema prob, int **wt, int ***st,int Xa, int Ya, int Xb, int Yb){
+void DijkstraMagic(problema prob, int **wt, int ***st,int Xa, int Ya, int Xb, int Yb, solucao *sol){
   Heap *heap = NULL;
   vertex *V;
-  int x, y, VertsAdjs[2][8], count = 0;
-  solucao *sol;
+  static int idx = 0; 
   
   if ((Xa != Xb) || (Ya != Yb)){
 
@@ -147,14 +152,29 @@ void DijkstraMagic(FILE *fp, problema prob, int **wt, int ***st,int Xa, int Ya, 
     free(getHeapData(heap));
     free(heap);
   }
-  Path_AtoB(fp, st, wt, prob, Xb, Yb, Xa, Ya, &sol, &count);
-  fprintf(fp, "\n");
+  Path_AtoB(st, wt, prob, Xb, Yb, Xa, Ya, sol, idx);
+  idx++;
 }
 
+solucao *modoB (problema prob, int ***st, int **wt){
+  solucao *sol = (solucao*)checked_malloc(sizeof(solucao));
+  sol->n_passos = (int*)checked_malloc(sizeof(int) * (prob.npontos - 1));
+  sol->passos = (vertex **)checked_malloc(sizeof(vertex*)*(prob.npontos - 1));
+  sol->custo = 0; 
+  for (int i = 0; prob.npontos - 1; i++)
+  {
+    DijkstraMagic(prob, wt, st, prob.pontos[i][0], prob.pontos[i][1], prob.pontos[i+1][0], prob.pontos[i+1][1], sol);
+  }
+  return sol;
+}
 
-void modoA (FILE *fp,problema prob, int ***st, int **wt){
-
-  DijkstraMagic(fp, prob, wt, st, prob.pontos[0][0], prob.pontos[0][1], prob.pontos[1][0], prob.pontos[1][1]);
+solucao *modoA (FILE *fp,problema prob, int ***st, int **wt){
+  solucao *sol = (solucao *)checked_malloc(sizeof(solucao));
+  sol->n_passos = (int *)checked_malloc(sizeof(int) * (prob.npontos - 1));
+  sol->passos = (vertex **)checked_malloc(sizeof(vertex *));
+  sol->custo = 0;
+  DijkstraMagic(prob, wt, st, prob.pontos[0][0], prob.pontos[0][1], prob.pontos[1][0], prob.pontos[1][1], sol);
+  return sol;
 }
 
 Item CreateVertex(int x, int y, int key){ 
@@ -177,9 +197,11 @@ void InsertAll(problema prob, int linhas, int colunas, Heap *heap){
   }
 }
 
-void Path_AtoB(FILE *fp, int ***st, int **wt, problema prob, int Xb, int Yb, int Xa, int Ya, solucao **S, int *count)
+void Path_AtoB(int ***st, int **wt, problema prob, int Xb, int Yb, int Xa, int Ya, solucao *S, int idx)
 {
   int no_recursion = 0, sol;
+  static int count = 0;
+  static int aux = 0;
   //não há solução
   if (st[Xb][Yb][0] == -1 || st[Xb][Yb][1] == -1){
     no_recursion = 1;
@@ -192,139 +214,45 @@ void Path_AtoB(FILE *fp, int ***st, int **wt, problema prob, int Xb, int Yb, int
 
   if (no_recursion == 0)
   {
-    (*count)++;
+    count++;
 
     //Para de chamar recursivamente quando chega ao segundo ponto do percurso
     if ((st[Xb][Yb][0] != Xa) || (st[Xb][Yb][1] != Ya))
     {
-      Path_AtoB(fp, st, wt, prob, st[Xb][Yb][0], st[Xb][Yb][1], Xa, Ya, S, count);
+      Path_AtoB(st, wt, prob, st[Xb][Yb][0], st[Xb][Yb][1], Xa, Ya, S, idx);
     }
     if ((st[Xb][Yb][0] == Xa) && (st[Xb][Yb][1] == Ya))
     {
-      fprintf(fp, "%d %d %c %d %d %d\n", prob.nlinhas, prob.ncolunas, prob.modo, prob.npontos, wt[prob.pontos[1][0]][prob.pontos[1][1]], *count);
+      S->passos[idx] = (vertex *)checked_malloc(sizeof(vertex) * count);
+      S->n_passos[idx] = count;
+      S->custo += wt[Xb][Yb];
     }
-    //imprime o ponto anterior
-    fprintf(fp, "%d %d %d\n", Xb, Yb, prob.mapa[Xb][Yb]);
+    S->passos[idx][aux].x = Xb;
+    S->passos[idx][aux].y = Yb;
+    S->passos[idx][aux].key = prob.mapa[Xb][Yb];
+    aux++;
   }
   else
   {
-    fprintf(fp, "%d %d %c %d %d %d\n", prob.nlinhas, prob.ncolunas, prob.modo, prob.npontos, sol, 0);
+    S->n_passos[idx] = 0;
+    S->valido = sol;
   }
 }
 
-void InsertAndRelax_Adjs(Heap *h, vertex *V, int **wt, int ***st, problema prob)
+void InsertAndRelax_Adjs(Heap *h, vertex *V, int **wt, int ***st, problema P)
 {
-  int x = V->x, y = V->y;
+  int x = V->x, y = V->y, X, Y;
+  int Adjs[8][2] = {{1, 2}, {-1, -2}, {-1, 2}, {1, -2}, {2, 1}, {-2, -1}, {2, -1}, {-2, 1}};
 
-  //verifica para cima
-  if (x > 1)
-  {
-    if (y < prob.ncolunas - 1)
-    { //verificar cima, direita
-      if (prob.mapa[x - 2][y + 1] != 0)
-      { //verifica se a celula que vai aceder é acessivel
-        //insere no heap se nunca teve no heap 
-        if(wt[x-2][y+1] == INT_MAX/2){
-          HeapInsert(h, CreateVertex(x - 2, y + 1, INT_MAX / 2));
-        }
-        RelaxEdge(h, wt, st, prob, V, -2, 1);
-      }
-    }
-    if (y > 0)
-    { //verificar cima,esquerda
-      if (prob.mapa[x - 2][y - 1] != 0)
-      {
+  for (int i = 0; i < 8; i++){
+    if ((((X = Adjs[i][0] + x) >= 0) && (X < P.nlinhas)) && (((Y = Adjs[i][1] + y) >= 0) && (Y < P.ncolunas))){
+      if (P.mapa[X][Y] != 0){
         //insere no heap se nunca teve no heap
-        if (wt[x - 2][y - 1] == INT_MAX / 2)
+        if (wt[X][Y] == INT_MAX / 2)
         {
-          HeapInsert(h, CreateVertex(x - 2, y - 1, INT_MAX / 2));
+          HeapInsert(h, CreateVertex(X, Y, INT_MAX / 2));
         }
-        RelaxEdge(h, wt, st, prob, V, -2, -1);
-      }
-    }
-
-  }
-  //verificar para baixo
-  if (x < prob.nlinhas - 2)
-  {
-    if (y < prob.ncolunas - 1)
-    { //verificar baixo, direita
-      if (prob.mapa[x + 2][y + 1] != 0)
-      {
-        //insere no heap se nunca teve no heap
-        if (wt[x + 2][y + 1] == INT_MAX / 2)
-        {
-          HeapInsert(h, CreateVertex(x + 2, y + 1, INT_MAX / 2));
-        }
-        RelaxEdge(h, wt, st, prob, V, 2, 1);
-      }
-    }
-    if (y > 0)
-    { //verificar baixo, esquerda
-      if (prob.mapa[x + 2][y - 1] != 0)
-      {
-        //insere no heap se nunca teve no heap
-        if (wt[x + 2][y - 1] == INT_MAX / 2)
-        {
-          HeapInsert(h, CreateVertex(x + 2, y - 1, INT_MAX / 2));
-        }
-        RelaxEdge(h, wt, st, prob, V, 2, -1);
-      }
-    }
-  }
-  //verificar para esquerda
-  if (y > 1)
-  {
-    if (x < prob.nlinhas - 1)
-    { //verificar esquerda, baixo
-      if (prob.mapa[x + 1][y - 2] != 0)
-      {
-        //insere no heap se nunca teve no heap
-        if (wt[x + 1][y - 2] == INT_MAX / 2)
-        {
-          HeapInsert(h, CreateVertex(x + 1, y - 2, INT_MAX / 2));
-        }
-        RelaxEdge(h, wt, st, prob, V, 1, -2);
-      }
-    }
-    if (x > 0)
-    { //verificar esquerda, cima
-      if (prob.mapa[x - 1][y - 2] != 0)
-      {
-        //insere no heap se nunca teve no heap
-        if (wt[x - 1][y - 2] == INT_MAX / 2)
-        {
-          HeapInsert(h, CreateVertex(x - 1, y - 2, INT_MAX / 2));
-        }
-        RelaxEdge(h, wt, st, prob, V, -1, -2);
-      }
-    }
-  }
-  //verificar para a direita
-  if (y < prob.ncolunas - 2)
-  {
-    if (x < prob.nlinhas - 1)
-    { //verificar direita, baixo
-      if (prob.mapa[x + 1][y + 2] != 0)
-      {
-        //insere no heap se nunca teve no heap
-        if (wt[x + 1][y + 2] == INT_MAX / 2)
-        {
-          HeapInsert(h, CreateVertex(x + 1, y + 2, INT_MAX / 2));
-        }
-        RelaxEdge(h, wt, st, prob, V, 1, 2);
-      }
-    }
-    if (x > 0)
-    { //verificar direita, cima
-      if (prob.mapa[x - 1][y + 2] != 0)
-      {
-        //insere no heap se nunca teve no heap
-        if (wt[x - 1][y + 2] == INT_MAX / 2)
-        {
-          HeapInsert(h, CreateVertex(x - 1, y + 2, INT_MAX / 2));
-        }
-        RelaxEdge(h, wt, st, prob, V, -1, 2);
+        RelaxEdge(h, wt, st, P, V, Adjs[i][0], Adjs[i][1]);
       }
     }
   }
@@ -373,5 +301,22 @@ void printQueue(Heap * h)
   {
     V = getItem(h, i);
     printf("%d\n", V->key);
+  }
+}
+
+void print_sol(FILE *fp, problema *p, solucao *Sol)
+{
+  int n_passos = 0;
+  for (int i = 0; i < p->npontos - 1; i++){
+    n_passos += Sol->n_passos[i]; 
+  }
+  fprintf(fp, "%d %d %c %d %d %d\n", p->nlinhas, p->ncolunas, p->modo, p->npontos, Sol->custo, n_passos);
+  for (int i = 0; i < p->npontos - 1; i++)
+  {
+    for (int j = 0; j < Sol->n_passos[i]; j++)
+    {
+      fprintf(fp, "%d %d %d\n", Sol->passos[i][j].x, Sol->passos[i][j].y, Sol->passos[i][j].key);
+    }
+    printf("\n");
   }
 }

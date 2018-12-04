@@ -18,8 +18,8 @@ typedef struct {
 typedef struct {
   int valido;
   int custo;
-  int n_pontos;
-  int **pontos;
+  int *n_passos;
+  struct _vertex **passos;
 }solucao;
 
 typedef struct _vertex{
@@ -33,20 +33,21 @@ Item CreateVertex(int , int , int);
 int FindIndex(Heap *, int, int);
 void printQueue(Heap *);
 void InsertAll(problema , int , int , Heap *);
-void Path_AtoB(FILE *,int ***, int **, problema , int , int , int, int, solucao **, int*);
+void Path_AtoB(int ***, int **, problema , int , int , int , int, solucao *, int); 
 void InsertAndRelax_Adjs(Heap *, vertex *, int **, int ***, problema);
 int TrapedPoint(problema, int, int);
 
 void RelaxEdge(Heap *, int **, int ***, problema, vertex *, int, int);
+void print_sol(FILE *, problema *, solucao *);
 
-void DijkstraMagic(FILE *, problema prob, int **wt, int ***st, int Xa, int Ya, int Xb, int Yb);
+void DijkstraMagic(problema, int **, int ***, int, int, int, int, solucao *);
 
 problema *ler_problema(FILE *, int ****, int ***);
 int validate_problem(problema);
 int validate_points(problema);
 void free_problema(problema *, int ***, int **);
 solucao *solve_problem(FILE *, problema, int ***, int **);
-void modoA(FILE *, problema, int ***, int **);
-
+solucao * modoA(FILE *, problema, int ***, int **);
+solucao * modoB(problema prob, int ***st, int **wt);
 
 #endif

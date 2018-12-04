@@ -1,0 +1,2 @@
+- Matrix para FindIndex
+- Estrutura que guarde o ST e o WT e a MATRIZ DOS INDICES
