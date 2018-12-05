@@ -139,7 +139,7 @@ void DijkstraMagic(problema prob, int **wt, int ***st,int Xa, int Ya, int Xb, in
       }
     }
     //inicializa o Heap
-    heap = HeapInit(CompareKey, (prob.ncolunas * prob.nlinhas));
+    heap = HeapInit(CompareKey, SentCoordinates, prob.nlinhas, prob.ncolunas);
     //Insere o ponto inicial 
     wt[Xa][Ya] = 0;
     HeapInsert(heap, CreateVertex(Xa, Ya, 0));
@@ -277,7 +277,7 @@ void RelaxEdge(Heap *heap, int **wt, int ***st, problema prob, vertex *V, int Xm
     st[x][y][0] = V->x;
     st[x][y][1] = V->y;
     //o indice está correto
-    ChangePri(heap, FindIndex(heap, x, y), CreateVertex(x, y, wt[x][y]));
+    ChangePri(heap, CreateVertex(x, y, wt[x][y]));
   }
 }
 
@@ -327,3 +327,10 @@ void print_sol(FILE *fp, problema *p, solucao *Sol)
     printf("\n");
   }
 }
+
+int SentCoordinates(Item a, int NCols){
+  vertex *A = a;
+  return (A->x * NCols + A->y);
+}
+
+

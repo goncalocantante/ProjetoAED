@@ -24,6 +24,7 @@ typedef struct {
 
 typedef struct _vertex{
   int key;
+  int id;
   int x,y;  
 }vertex;
 
@@ -49,5 +50,7 @@ void free_problema(problema *, int ***, int **, solucao *);
 solucao *solve_problem(FILE *, problema, int ***, int **);
 solucao * modoA(FILE *, problema, int ***, int **);
 solucao * modoB(problema prob, int ***st, int **wt);
+
+int SentCoordinates(Item, int );
 
 #endif

@@ -5,44 +5,59 @@
 
 struct _heap
 {
-	int size;
+	int size1; 
+	int size2;
 	int free;
+	int *HeapIndexes;
 	int (*less)(Item, Item); //para comparar items
+	int (*GetId)(Item, int);
 	Item *heapdata;
 };
 
-
-Heap *HeapInit(int (*less)(Item, Item), int size)
+Heap *HeapInit(int (*less)(Item, Item), int (*GetId)(Item, int), int size1, int size2)
 {
 	Heap *_heap = (Heap *)checked_malloc(sizeof(Heap));
-	_heap->size = size;
+	_heap->size1 = size1;
+	_heap->size2 = size2;
 	_heap->free = 0;
 	_heap->less = less;
-	_heap->heapdata = (Item *)checked_malloc(sizeof(Item)*size);
+	_heap->GetId = GetId;
+	_heap->heapdata = (Item *)checked_malloc(sizeof(Item)*(size1*size2));
+	_heap->HeapIndexes = (int *)checked_malloc(sizeof(int)*(size1*size2)); //TODO talvez seja preciso inicializar
 	return _heap;
 }
-
  
 void HeapInsert(Heap *h, Item item)
 {
-	if ((h->free + 1) < h->size)
+	int id;
+	if ((h->free + 1) < ((h->size1)*(h->size2)))
 	{
 		(h->heapdata)[h->free] = item;
 	}
-	FixUp(h, h->free);   
+	id = h->GetId(item, h->size2);
+	h->HeapIndexes[id] = h->free;
+	FixUp(h, h->free);  
 	(h->free)++;
 }
 
 void FixUp(Heap *h, int Idx)
 {
 	Item t;
+	int IdChild, IdFather;
 	//enquanto o pai for menos prioritario que o filho
 	while (Idx > 0 && (h->less)((h->heapdata)[(Idx - 1) / 2], (h->heapdata)[Idx]))
 	{
+		//atualiza os indices
+		IdChild = h->GetId((h->heapdata)[Idx], h->size2);			//buscar o id do filho
+		IdFather = h->GetId((h->heapdata)[(Idx - 1) / 2], h->size2); // buscar o id do pai
+		h->HeapIndexes[IdChild] = ((Idx - 1) / 2);
+		h->HeapIndexes[IdFather] = (Idx);
+		
 		//Troca o filho com o pai
 		t = (h->heapdata)[Idx]; //filho
 		(h->heapdata)[Idx] = (h->heapdata)[(Idx - 1) / 2]; //filho = pai
 		(h->heapdata)[(Idx - 1) / 2] = t; //pai = filho
+
 		//Continua a subir do acervo
 		Idx = (Idx - 1) / 2;
 	}
@@ -53,7 +68,7 @@ void FixUp(Heap *h, int Idx)
 void FixDown(Heap *h, int Idx)
 {
 	int Child; //indície do nó descendente
-	int leaf = ((h->free) - 1);
+	int leaf = ((h->free) - 1), IdChild, IdFather;
 	Item t;
 		
 	//enquanto não chega às folhas
@@ -67,17 +82,26 @@ void FixDown(Heap *h, int Idx)
 		if ((h->less)((h->heapdata)[Child], (h->heapdata)[Idx])) // se o pai é mais prioritário que o filho
 			break;						                         //condição de heap satisfeita
 
+
+		//atualiza os indices
+		IdChild = h->GetId((h->heapdata)[Child], h->size2); //buscar o id do filho
+		IdFather = h->GetId((h->heapdata)[Idx], h->size2);  // buscar o id do pai
+		h->HeapIndexes[IdChild] = (Idx);
+		h->HeapIndexes[IdFather] = Child;
+		
 		//troca o pai com o filho mais prioritário
    		t = (h->heapdata)[Child];				   //filho
 		(h->heapdata)[Child] = (h->heapdata)[Idx]; //filho = pai
 		(h->heapdata)[Idx] = t;				       //pai = filho
 
+
 		Idx = Child; //continua a descer na árvore
 	}
 }
 
-void ChangePri(Heap *h, int index, Item item)
-{
+void ChangePri(Heap *h, Item item)
+{	int index = h->HeapIndexes[h->GetId(item, h->size2)]; 
+
 	//se o index não estiver dentro dos limites
 	if (index > h->free - 1)
 	{
@@ -109,6 +133,14 @@ int EmptyHeap(Heap *h)
 void HeapDeleteMostPri(Heap *h)
 {
 	Item t;
+	int IdFirst, IdLast;
+
+	//atualiza os indices
+	IdFirst = h->GetId((h->heapdata)[0], h->size2); //buscar o id do primeiro
+	IdLast = h->GetId((h->heapdata)[(h->free) - 1], h->size2);  // buscar o id do pai
+	h->HeapIndexes[IdFirst] = (h->free) - 1;
+	h->HeapIndexes[IdLast] = 0;
+
 	//troca primeiro com o último
 	t = (h->heapdata)[0];			   	   
 	(h->heapdata)[0] = (h->heapdata)[(h->free)-1]; 
@@ -146,7 +178,7 @@ int getFree(Heap * h){
 
 int getSize(Heap *h)
 {
-	return h->size;
+	return ((h->size1)*(h->size2));
 }
 
 Item *getHeapData(Heap* h){
