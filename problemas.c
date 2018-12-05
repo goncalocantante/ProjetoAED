@@ -80,8 +80,15 @@ int TrapedPoint (problema P, int x, int y){
 }
 
 //liberta memória alocada na estrutura
-void free_problema(problema *estrutura, int ***st, int **wt){
+void free_problema(problema *estrutura, int ***st, int **wt, solucao *sol){
   int i;
+  for(i = 0; i < estrutura->npontos - 1; i++){
+    free(sol->passos[i]);
+  }
+  free(sol->passos);
+  free(sol->n_passos);
+  free(sol);
+
   for (i = 0; i < estrutura->nlinhas; i++) {
     free(estrutura->mapa[i]);
   }
@@ -97,12 +104,12 @@ solucao *solve_problem(FILE *fp, problema prob, int ***st, int **wt ){
   solucao *sol = NULL;
 
   if (validate_problem(prob) == 0 || validate_points(prob) == 0) {
-    solucao *sol = (solucao *)checked_malloc(sizeof(solucao));
-    sol->n_passos = (int *)checked_malloc(sizeof(int));
+    sol = (solucao *)checked_malloc(sizeof(solucao));
+    sol->n_passos = (int *)checked_malloc(sizeof(int) * prob.npontos - 1);
     sol->passos = (vertex **)checked_malloc(sizeof(vertex *));
     sol->n_passos[0] = 0;
     sol->valido = -1;
-    sol->custo = 0;
+    sol->custo = -1;
   }
   else if (prob.modo == 'A') {
     sol = modoA(fp ,prob, st, wt); 
@@ -211,7 +218,7 @@ void Path_AtoB(int ***st, int **wt, problema prob, int Xb, int Yb, int Xa, int Y
    no_recursion = 1; 
    sol = 0;
   }
-
+  
   if (no_recursion == 0)
   {
     count++;
@@ -306,6 +313,7 @@ void printQueue(Heap * h)
 void print_sol(FILE *fp, problema *p, solucao *Sol)
 {
   int n_passos = 0;
+
   for (int i = 0; i < p->npontos - 1; i++){
     n_passos += Sol->n_passos[i]; 
   }

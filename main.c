@@ -23,12 +23,9 @@ int main(int argc, char *argv[]) {
     //printf("TAS COMNO\n");
     sol = solve_problem(fp_out, *prob, st, wt);
     print_sol(fp_out, prob, sol);
-
-
-    fprintf(fp_out,"%d %d %c %d %d %d\n", prob->nlinhas, prob->ncolunas, prob->modo, prob->npontos, sol->valido, sol->custo);
-    free(sol);
     fprintf(fp_out, "\n");
-    free_problema(prob, st, wt);
+    free_problema(prob, st, wt, sol);
+
   }
   fclose(fp_in);
   fclose(fp_out);
