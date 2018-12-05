@@ -40,14 +40,14 @@ int TrapedPoint(problema, int, int);
 void RelaxEdge(Heap *, int **, int ***, problema, vertex *, int, int);
 void print_sol(FILE *, problema *, solucao *);
 
-void DijkstraMagic(problema, int **, int ***, int, int, int, int, solucao *);
+void DijkstraMagic(problema, int **, int ***, int, int, int, int, solucao *, int *);
 
 problema *ler_problema(FILE *, int ****, int ***);
 int validate_problem(problema);
 int validate_points(problema);
 void free_problema(problema *, int ***, int **, solucao *);
 solucao *solve_problem(FILE *, problema, int ***, int **);
-solucao * modoA(FILE *, problema, int ***, int **);
+solucao * modoA(problema, int ***, int **);
 solucao * modoB(problema prob, int ***st, int **wt);
 
 #endif
