@@ -7,3 +7,8 @@ DUVIDAS:
 linha 169 problemas.c se por Pf = pi, a matriz wt nao ta inicializada e vai dar merda fazer sol->custo += wt[Xb][Yb]
 
 A recursiva da merda porque qd Pi = Pf ele nao faz dijkstra, nao inicializa a matriz wt nem st e ha condições no path A to B que dão shit
+
+porque raio fazemos uma matriz de vertices para imprimir a soluçao. so precisamos das coordenadas, mas deve ser cagativo
+
+
+se encontra um caminho nao valido faz break no modo B
