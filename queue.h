@@ -12,16 +12,10 @@ void FixDown(Heap *, int);
 void ChangePri(Heap *h, Item);
 int EmptyHeap(Heap *);
 Item getItem(Heap *, int);
-int getFree(Heap *h);
+int getFree(Heap *);
 Item getMostPri(Heap *);
 void HeapDeleteMostPri(Heap *);
 Item *getHeapData(Heap *);
-
-/* void FixUp(Heap **, int);
-void exch(Heap *, Heap *);
-int EmptyHeap(Heap **);
-void PriorityDec(int, int, Heap **, int, int);
-void printQueue(Heap **, int);
-void FixDown(Heap **, int, int); */
+void freeHeap(Heap *);
 
 #endif

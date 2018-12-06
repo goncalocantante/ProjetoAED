@@ -31,4 +31,4 @@ clean:
 	rm -f *.o *.~ tuktuk *.gch
 
 cfiles:
-	rm *.cities *.valid
+	rm *.cities *.walks 

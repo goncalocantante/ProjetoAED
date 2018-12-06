@@ -47,7 +47,7 @@ void FixUp(Heap *h, int Idx)
 	//enquanto o pai for menos prioritario que o filho
 	while (Idx > 0 && (h->less)((h->heapdata)[(Idx - 1) / 2], (h->heapdata)[Idx]))
 	{
-		//atualiza os indices
+		//troca os indices no vetor
 		IdChild = h->GetId((h->heapdata)[Idx], h->size2);			//buscar o id do filho
 		IdFather = h->GetId((h->heapdata)[(Idx - 1) / 2], h->size2); // buscar o id do pai
 		h->HeapIndexes[IdChild] = ((Idx - 1) / 2);
@@ -107,9 +107,6 @@ void ChangePri(Heap *h, Item item)
 	{
 		exit(0);
 	}
-
-  	if (index == -1) { printf("Indicie nao encontrado"); exit(0); }  
-
 	//se aumentar a prioridade faz FixUp
 	if ((h->less)((h->heapdata)[index], item))
 	{	
@@ -145,6 +142,7 @@ void HeapDeleteMostPri(Heap *h)
 	t = (h->heapdata)[0];			   	   
 	(h->heapdata)[0] = (h->heapdata)[(h->free)-1]; 
 	(h->heapdata)[(h->free) - 1] = t;
+	
 	//elimina o ultimo
 	free((h->heapdata)[(h->free) - 1]);
 	(h->heapdata)[(h->free) - 1] = NULL;
@@ -158,15 +156,6 @@ Item getMostPri(Heap *heap){
 	return (heap->heapdata[0]);
 }
 
-/*void printQueue(Heap *h)
-{
-	int i;
-	for (i = 0; i < size; i++)
-	{
-		printf("%d\n", queue[i]->key);
-	}
-} */
-
 Item getItem (Heap* h, int idx){
 	if (idx > (h->free)-1) exit(0);	
 	return h->heapdata[idx];
@@ -176,6 +165,7 @@ int getFree(Heap * h){
 	return h->free;
 }
 
+
 int getSize(Heap *h)
 {
 	return ((h->size1)*(h->size2));
@@ -183,4 +173,12 @@ int getSize(Heap *h)
 
 Item *getHeapData(Heap* h){
 	return h->heapdata;
+}
+
+void freeHeap(Heap *h)
+{
+	for (int i = 0; i < h->free; i++)
+		free(h->heapdata[i]);
+	free(h->heapdata);
+	free(h);	
 }

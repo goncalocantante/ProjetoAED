@@ -25,6 +25,8 @@ void test_file (char nomefich[], int argc){
   if (strcmp(ext_fich, extensao) != 0) {
     exit(0);
   }
+  free(extensao);
+  free(ext_fich);
 }
 
 char* CreateOutputFileName(char *raw_name){
@@ -36,6 +38,5 @@ char* CreateOutputFileName(char *raw_name){
     file_out[i] = '\0';
   }
   strcat(file_out,".walks");
-
   return file_out;
 }
