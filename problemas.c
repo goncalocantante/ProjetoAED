@@ -134,11 +134,19 @@ solucao *solve_problem(FILE *fp, problema prob, int ***st, int **wt ){
 void DijkstraMagic(problema prob, int **wt, int ***st,int Xa, int Ya, int Xb, int Yb, solucao *sol, int *idx){
   Heap *heap = NULL;
   vertex *V; 
+  
   //se o Ponto Inicial == Ponto Final o resultado é trivial
-  if ((Xa != Xb) || (Ya != Yb)){
+  if ((Xa == Xb) && (Ya == Yb))
+    return;
+
+  //if ((Xa != Xb) || (Ya != Yb))
+  //{
+    //printf("fiz Dijkstra\n");
     //inicializa os vetores auxiliares
-    for (int v = 0; v < prob.nlinhas; v++){
-      for (int w = 0; w < prob.ncolunas; w++){
+    for (int v = 0; v < prob.nlinhas; v++)
+    {
+      for (int w = 0; w < prob.ncolunas; w++)
+      {
         //[v][w][0] = x  || [v][w][1] = y
         st[v][w][0] = -1;
         st[v][w][1] = -1;
@@ -147,7 +155,7 @@ void DijkstraMagic(problema prob, int **wt, int ***st,int Xa, int Ya, int Xb, in
     }
     //inicializa o Heap
     heap = HeapInit(CompareKey, SentCoordinates, prob.nlinhas, prob.ncolunas);
-    //Insere o ponto inicial 
+    //Insere o ponto inicial
     wt[Xa][Ya] = 0;
     HeapInsert(heap, CreateVertex(Xa, Ya, 0));
 
@@ -164,10 +172,11 @@ void DijkstraMagic(problema prob, int **wt, int ***st,int Xa, int Ya, int Xb, in
       HeapDeleteMostPri(heap);
     }
     freeHeap(heap);
-  }
-  sol->custo += wt[Xb][Yb];
-  Path_AtoB(st, wt, prob, Xb, Yb, Xa, Ya, sol, *idx);
-  (*idx)++;
+    //}
+    sol->custo += wt[Xb][Yb];
+    printf("vou entrar\n");
+    Path_AtoB(st, wt, prob, Xb, Yb, Xa, Ya, sol, *idx);
+    (*idx)++;
 }
 
 solucao *modoB (problema prob, int ***st, int **wt){
@@ -210,6 +219,9 @@ void Path_AtoB(int ***st, int **wt, problema prob, int Xb, int Yb, int Xa, int Y
   int no_recursion = 0, sol;
   static int count = 0;
   static int aux = 0;
+
+  /* printf("%d %d\n", Xb, Yb);
+  printf("mat : %d %d\n", st[Xb][Yb][0], st[Xb][Yb][1]); */
   //não há solução
   if (st[Xb][Yb][0] == -1 || st[Xb][Yb][1] == -1){
     no_recursion = 1;
@@ -219,7 +231,7 @@ void Path_AtoB(int ***st, int **wt, problema prob, int Xb, int Yb, int Xa, int Y
    no_recursion = 1; 
    sol = 0;
   }
-  
+
   if (no_recursion == 0)
   {
     count++;
@@ -319,7 +331,9 @@ void print_sol(FILE *fp, problema *p, solucao *Sol)
 
   if(Sol->valido == -1){
     fprintf(fp, "%d %d %c %d %d %d\n", p->nlinhas, p->ncolunas, p->modo, p->npontos, -1, 0);
-  }else{
+  }else if (Sol->custo == 0)
+    fprintf(fp, "%d %d %c %d %d %d\n", p->nlinhas, p->ncolunas, p->modo, p->npontos, 0, 0);
+  else {
     for (int i = 0; i < p->npontos - 1; i++){
       n_passos += Sol->n_passos[i]; 
     }

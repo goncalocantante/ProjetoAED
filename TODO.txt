@@ -1,2 +1,9 @@
 - Matrix para FindIndex
 - Estrutura que guarde o ST e o WT e a MATRIZ DOS INDICES
+
+
+
+DUVIDAS:
+linha 169 problemas.c se por Pf = pi, a matriz wt nao ta inicializada e vai dar merda fazer sol->custo += wt[Xb][Yb]
+
+A recursiva da merda porque qd Pi = Pf ele nao faz dijkstra, nao inicializa a matriz wt nem st e ha condições no path A to B que dão shit

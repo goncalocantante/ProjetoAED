@@ -142,7 +142,7 @@ void HeapDeleteMostPri(Heap *h)
 	t = (h->heapdata)[0];			   	   
 	(h->heapdata)[0] = (h->heapdata)[(h->free)-1]; 
 	(h->heapdata)[(h->free) - 1] = t;
-	
+
 	//elimina o ultimo
 	free((h->heapdata)[(h->free) - 1]);
 	(h->heapdata)[(h->free) - 1] = NULL;
@@ -180,5 +180,6 @@ void freeHeap(Heap *h)
 	for (int i = 0; i < h->free; i++)
 		free(h->heapdata[i]);
 	free(h->heapdata);
+	free(h->HeapIndexes);
 	free(h);	
 }
