@@ -44,9 +44,10 @@ problema *ler_problema(FILE *fp, int ****st, int ***wt){
 int validate_problem(problema prob){
   int ex_valido = 1;
 
-  if ((prob.modo != 'A' && prob.modo != 'B') || prob.nlinhas <= 0 || prob.ncolunas <= 0
-      || prob.npontos <= 0 || (prob.modo == 'A' && prob.npontos != 2)) {
-        ex_valido = 0;
+  if ((prob.modo != 'A' && prob.modo != 'B') || prob.nlinhas <= 0 || prob.ncolunas <= 0 || prob.npontos <= 0 || 
+      (prob.modo == 'A' && prob.npontos != 2) ||(prob.modo == 'B' && prob.npontos < 2))
+  {
+    ex_valido = 0;
   }
   return ex_valido;
 }
@@ -157,11 +158,7 @@ int DijkstraMagic(problema prob, int **wt, int ***st,int Xa, int Ya, int Xb, int
   while (EmptyHeap(heap) == 0)
   {
     V = getMostPri(heap);
-    if (V->x == Xb
-    
-    
-    
-     && V->y == Yb) //se já achou o caminho mais curto para o vértice pretendido
+    if (V->x == Xb && V->y == Yb) //se já achou o caminho mais curto para o vértice pretendido
       break;
     if (V->key != INT_MAX / 2)
     {
@@ -172,7 +169,7 @@ int DijkstraMagic(problema prob, int **wt, int ***st,int Xa, int Ya, int Xb, int
   freeHeap(heap);
   sol->custo += wt[Xb][Yb];
   Path_AtoB(st, wt, prob, Xb, Yb, Xa, Ya, sol, *idx);
-  if(sol->custo == -1) return 1;
+  if(sol->custo == -1) return 1; //nao necessita de repetir a função (modoB)
   (*idx)++;
   return 0;
 }
