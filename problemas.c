@@ -44,8 +44,8 @@ problema *ler_problema(FILE *fp, int ****st, int ***wt){
 int validate_problem(problema prob){
   int ex_valido = 1;
 
-  if ((prob.modo != 'A' && prob.modo != 'B') || prob.nlinhas <= 0 || prob.ncolunas <= 0 || prob.npontos <= 0 || 
-      (prob.modo == 'A' && prob.npontos != 2) ||(prob.modo == 'B' && prob.npontos < 2))
+  if ((prob.modo != 'A' && prob.modo != 'B') || prob.nlinhas <= 0 || prob.ncolunas <= 0 || prob.npontos <= 0 ||
+      (prob.modo == 'A' && prob.npontos != 2) || (prob.modo == 'B' && prob.npontos < 2))
   {
     ex_valido = 0;
   }
@@ -201,7 +201,6 @@ Item CreateVertex(int x, int y, int key){
   vert->y = y; 
   return vert;
 }
-
 
 void Path_AtoB(int ***st, int **wt, problema prob, int Xb, int Yb, int Xa, int Ya, solucao *S, int idx)
 {
