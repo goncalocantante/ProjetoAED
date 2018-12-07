@@ -157,7 +157,11 @@ int DijkstraMagic(problema prob, int **wt, int ***st,int Xa, int Ya, int Xb, int
   while (EmptyHeap(heap) == 0)
   {
     V = getMostPri(heap);
-    if (V->x == Xb && V->y == Yb) //se já achou o caminho mais curto para o vértice pretendido
+    if (V->x == Xb
+    
+    
+    
+     && V->y == Yb) //se já achou o caminho mais curto para o vértice pretendido
       break;
     if (V->key != INT_MAX / 2)
     {
