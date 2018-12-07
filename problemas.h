@@ -6,12 +6,18 @@
 
 #include "queue.h"
 
+typedef struct _vertex{
+  int key;
+  int x,y;
+}vertex;
+
 typedef struct {
   int nlinhas;
   int ncolunas;
   char modo;
   int npontos;
-  int **pontos;
+  //int **pontos;
+  vertex *pontos;
   int **mapa;
 }problema;
 
@@ -19,36 +25,35 @@ typedef struct {
   int valido;
   int custo;
   int *n_passos;
-  struct _vertex **passos;
+  vertex **passos;
 }solucao;
 
-typedef struct _vertex{
+ typedef struct _HeapNode{
   int key;
-  int x,y;  
-}vertex;
-
+  vertex coord;
+} HeapNode;
 
 int CompareKey(Item, Item);
-Item CreateVertex(int , int , int);
-int FindIndex(Heap *, int, int);
+Item CreateHeapNode(int , int , int );
+
 void printQueue(Heap *);
-void InsertAll(problema , int , int , Heap *);
-void Path_AtoB(int ***, int **, problema , int , int , int , int, solucao *, int); 
-void InsertAndRelax_Adjs(Heap *, vertex *, int **, int ***, problema);
+void InsertAll(problema, int, int, Heap *);
+void Path_AtoB(vertex **, int **, problema, int, int, int, int, solucao *, int);
+void InsertAndRelax_Adjs(Heap *, HeapNode *, int **, vertex **, problema);
 int TrapedPoint(problema, int, int);
 
-void RelaxEdge(Heap *, int **, int ***, problema, vertex *, int, int);
+void RelaxEdge(Heap *, int **, vertex **, problema, HeapNode *, int, int);
 void print_sol(FILE *, problema *, solucao *);
 
-int DijkstraMagic(problema, int **, int ***, int, int, int, int, solucao *, int *);
+int DijkstraMagic(problema, int **, vertex **, int, int, int, int, solucao *, int *);
 void InitSolution(solucao **, int);
-problema *ler_problema(FILE *, int ****, int ***);
+problema *ler_problema(FILE *, vertex ***, int ***, solucao **);
 int validate_problem(problema);
 int validate_points(problema);
-void free_problema(problema *, int ***, int **, solucao *);
-solucao *solve_problem(FILE *, problema, int ***, int **);
-solucao *modoA(problema, int ***, int **);
-solucao *modoB(problema prob, int ***st, int **wt);
+void free_problema(problema *, vertex **, int **, solucao *);
+solucao *solve_problem(problema, vertex **, int **);
+solucao *modoA(problema, vertex**, int **);
+solucao *modoB(problema prob, vertex **, int **wt);
 
 int SentCoordinates(Item, int);
 

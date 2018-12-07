@@ -7,8 +7,9 @@ int main(int argc, char *argv[])
   FILE *fp_in = NULL, *fp_out = NULL;
   problema *prob = NULL;
   solucao *sol = NULL;
-  char *file_out;
-  int **wt = NULL, ***st = NULL;
+  char *file_out = NULL;
+  int **wt = NULL; 
+  vertex **st = NULL;
 
   //testa se o ficheiro é válido
   test_file(argv[1], argc);
@@ -21,14 +22,17 @@ int main(int argc, char *argv[])
   fp_out = fopen(file_out, "w");
   if (fp_out == NULL)
     exit(0);
-  //enquanto houver problemas para resolver
-  while ((prob = ler_problema(fp_in, &st, &wt)) != NULL)
-  {
-    //printf("TAS COMNO\n");
-    sol = solve_problem(fp_out, *prob, st, wt);
+  //enquanto houver problemas para resolver && e o problema for válido
+  while ((prob = ler_problema(fp_in, &st, &wt, &sol)) != NULL)
+  { 
+    if (sol == NULL){
+      sol = solve_problem(*prob, st, wt);
+    }
     print_sol(fp_out, prob, sol);
-    // fprintf(fp_out, "\n");
     free_problema(prob, st, wt, sol);
+    sol = NULL;
+    st = NULL;
+    wt = NULL;
   }
   fclose(fp_in);
   fclose(fp_out);

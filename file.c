@@ -10,8 +10,7 @@ void test_file(char nomefich[], int argc)
   int i, j = 0, len = strlen(nomefich), len_ext = strlen(".cities");
   char *extensao = (char *)checked_malloc(sizeof(char) * len_ext + 1);
   char *ext_fich = (char *)checked_malloc(sizeof(char) * len_ext + 1);
-  ;
-
+  
   //verifica numero de argumentos
   if (argc != 2)
   {
@@ -30,6 +29,8 @@ void test_file(char nomefich[], int argc)
   {
     exit(0);
   }
+  free(extensao);
+  free(ext_fich);
 }
 
 char *CreateOutputFileName(char *raw_name)
