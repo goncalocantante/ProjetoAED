@@ -135,7 +135,7 @@ int DijkstraMagic(problema prob, int **wt, int ***st,int Xa, int Ya, int Xb, int
   //se o Ponto Inicial == Ponto Final nao é necessário aplicar o algoritmo
   if ((Xa == Xb) && (Ya == Yb)){
     (*idx)++;
-    return 1;
+    return 0;
   }
   //inicializa os vetores auxiliares
   for (int v = 0; v < prob.nlinhas; v++)
@@ -181,7 +181,7 @@ solucao *modoB (problema prob, int ***st, int **wt){
   for (int i = 0; i < prob.npontos - 1; i++)
   {
     stop = DijkstraMagic(prob, wt, st, prob.pontos[i][0], prob.pontos[i][1], prob.pontos[i+1][0], prob.pontos[i+1][1], sol, &idx);
-    if(stop) break;
+    if (stop) break;
   }
   return sol;
 }
