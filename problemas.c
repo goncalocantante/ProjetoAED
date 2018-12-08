@@ -176,7 +176,7 @@ void DijkstraMagic(problema prob, int **wt, vertex **st,int Xa, int Ya, int Xb, 
 
 solucao *modoC (problema prob, vertex **st, int **wt){
   solucao *sol;
-  int idx = 0;
+  int idx = 0,  *vert = (int*)checked_malloc(sizeof(int) * (prob.npontos-1)), i;
   int **matrix = NULL;
  
   InitSolution(&sol, (prob.npontos) - 1);
@@ -204,6 +204,12 @@ solucao *modoC (problema prob, vertex **st, int **wt){
     //não tenho a certeza se o break quebra os dois fors então fica aqui o outro por segurança
     if(sol->custo == -1) break; //nao necessita de repetir a função (modoC) 
   }
+
+  for (int j = 1; j < (prob.npontos); j++)
+  { 
+    vert[j] = j;
+  }
+  PermutationBeast(vert, 0, prob.npontos);
   
 for (int i = 0; i < prob.npontos; i++)
 {
@@ -388,19 +394,19 @@ void PermutationBeast(int *array, int i, int length)
   int aux;
   if (length == i)
   {
-    printArr(array, length);
+    printArr(array, length);   /* Aqui termina uma iteração */       //vai tar aqui uma funçao que calcula o peso do caminho para aquela iteração
     return;
   }
   int j = i;
   for (j = i; j < length; j++)
   {
     aux = array[i];
-    array[i] = array[j];
-    array[j] = aux; 
-    PermutationBeast(array, i + 1, length);
-    aux = array[i];
-    array[i] = array[j];
+    array[i] = array[j];           
     array[j] = aux;
+    PermutationBeast(array, i + 1, length); // nao faço puto de ideia.
+    aux = array[i];                          //Isto está basicamente a fazer 
+    array[i] = array[j];                     //todas as combinações, de forma resursiva
+    array[j] = aux;                            
   }
   return;
 }
