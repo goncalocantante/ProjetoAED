@@ -137,10 +137,9 @@ solucao *solve_problem(problema prob, vertex **st, int **wt ){
 
 //Encontra o melhor caminho entre A e B
 //Retorna o numero de pontos do caminho
-void DijkstraMagic(problema prob, int **wt, vertex **st,int Xa, int Ya, int Xb, int Yb){
+void DijkstraMagic(problema prob, int **wt, vertex **st,int Xa, int Ya, int Xb, int Yb, int *stop){
   Heap *heap = NULL;
-  HeapNode *V; 
-
+  HeapNode *V;
   //inicializa os vetores auxiliares
   for (int v = 0; v < prob.nlinhas; v++)
   {
@@ -160,15 +159,19 @@ void DijkstraMagic(problema prob, int **wt, vertex **st,int Xa, int Ya, int Xb, 
   while (EmptyHeap(heap) == 0)
   {
     V = getMostPri(heap);
-    //printQueue(heap);
-    //printf("\n");
-    if (V->coord.x == Xb && V->coord.y == Yb) //se já achou o caminho mais curto para o vértice pretendido
-      break;
-    if (V->key != INT_MAX / 2)
-    {
-      InsertAndRelax_Adjs(heap, V, wt, st, prob);
-    }
-    HeapDeleteMostPri(heap);
+  //Verificar se todos os pontos do caminho já foram verificados (Parte C)
+  if (StopHeap(stop)) break;
+
+  /* if (V->coord.x == Xb && V->coord.y == Yb) 
+    break;                                          |||Em vez disto o que tá em cima||| */
+
+
+
+  if (V->key != INT_MAX / 2)
+  {
+    InsertAndRelax_Adjs(heap, V, wt, st, prob);
+  }
+  HeapDeleteMostPri(heap);
   }
   freeHeap(heap);                         
 }
@@ -178,7 +181,7 @@ solucao *modoC (problema prob, vertex **st, int **wt){
   solucao *sol;
   int idx = 0,  *vert = (int*)checked_malloc(sizeof(int) * (prob.npontos-1)), i;
   int **matrix = NULL;
- 
+
   InitSolution(&sol, (prob.npontos) - 1);
   matrix = (int **)checked_malloc(sizeof(int *) * prob.npontos);  
   for (int i = 0; i < prob.npontos; i++)
@@ -403,7 +406,7 @@ void PermutationBeast(int *array, int i, int length)
     aux = array[i];
     array[i] = array[j];           
     array[j] = aux;
-    PermutationBeast(array, i + 1, length); // nao faço puto de ideia.
+    PermutationBeast(array, i + 1, length);  // nao faço puto de ideia.
     aux = array[i];                          //Isto está basicamente a fazer 
     array[i] = array[j];                     //todas as combinações, de forma resursiva
     array[j] = aux;                            
@@ -420,3 +423,9 @@ void printArr(int *a, int n)
   printf("\n");
 }
 
+int StopDijkstra(int *stop, int size){   
+  for(int i = 0; i < size; i++){
+    if (stop[i] != 0) return 1;   //se econtra algum ponto que nao foi visto
+  }
+  return 0;
+}

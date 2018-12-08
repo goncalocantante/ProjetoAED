@@ -55,6 +55,7 @@ solucao *modoC(problema, vertex **, int **);
 
 int SentCoordinates(Item, int);
 
-void printArr(int *, int );
+int StopDijkstra(int *stop, int size);
+void printArr(int *, int);                     ///Melhora para o Dijkstra e Maquina de Permutações
 void PermutationBeast(int *a, int size, int n);
 #endif
