@@ -15,7 +15,6 @@ problema *ler_problema(FILE *fp, vertex ***st, int ***wt, solucao **sol)
     free(prob);
     return NULL;
   }
-  
   //só continua se o problema for válido
   if (validate_problem(*prob) == 0)
   {
