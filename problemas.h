@@ -42,7 +42,7 @@ int TrapedPoint(problema, int, int);
 void RelaxEdge(Heap *, int **, vertex **, problema, HeapNode *, int, int);
 void print_sol(FILE *, problema *, solucao *);
 
-int DijkstraMagic(problema, int **, vertex **, int, int, int, int);
+void DijkstraMagic(problema, int **, vertex **, int, int, int, int);
 void InitSolution(solucao **, int);
 problema *ler_problema(FILE *, vertex ***, int ***, solucao **);
 int validate_problem(problema);
@@ -55,4 +55,6 @@ solucao *modoC(problema, vertex **, int **);
 
 int SentCoordinates(Item, int);
 
+void printArr(int *, int );
+void PermutationBeast(int *a, int size, int n);
 #endif

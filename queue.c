@@ -82,7 +82,6 @@ void FixDown(Heap *h, int Idx)
 		if ((h->less)((h->heapdata)[Child], (h->heapdata)[Idx])) // se o pai é mais prioritário que o filho
 			break;						                         //condição de heap satisfeita
 
-
 		//atualiza os indices
 		IdChild = h->GetId((h->heapdata)[Child], h->size2); //buscar o id do filho
 		IdFather = h->GetId((h->heapdata)[Idx], h->size2);  // buscar o id do pai

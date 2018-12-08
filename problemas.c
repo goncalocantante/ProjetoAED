@@ -138,7 +138,7 @@ solucao *solve_problem(problema prob, vertex **st, int **wt ){
 
 //Encontra o melhor caminho entre A e B
 //Retorna o numero de pontos do caminho
-int DijkstraMagic(problema prob, int **wt, vertex **st,int Xa, int Ya, int Xb, int Yb){
+void DijkstraMagic(problema prob, int **wt, vertex **st,int Xa, int Ya, int Xb, int Yb){
   Heap *heap = NULL;
   HeapNode *V; 
 
@@ -157,11 +157,12 @@ int DijkstraMagic(problema prob, int **wt, vertex **st,int Xa, int Ya, int Xb, i
   //Insere o ponto inicial
   wt[Xa][Ya] = 0;
   HeapInsert(heap, CreateHeapNode(Xa, Ya, 0));
-
   //Enquanto não foi a todos os vértices
   while (EmptyHeap(heap) == 0)
   {
     V = getMostPri(heap);
+    //printQueue(heap);
+    //printf("\n");
     if (V->coord.x == Xb && V->coord.y == Yb) //se já achou o caminho mais curto para o vértice pretendido
       break;
     if (V->key != INT_MAX / 2)
@@ -170,9 +171,7 @@ int DijkstraMagic(problema prob, int **wt, vertex **st,int Xa, int Ya, int Xb, i
     }
     HeapDeleteMostPri(heap);
   }
-  freeHeap(heap);
-  
-  return 0;
+  freeHeap(heap);                         
 }
 
 
@@ -180,33 +179,40 @@ solucao *modoC (problema prob, vertex **st, int **wt){
   solucao *sol;
   int idx = 0;
   int **matrix = NULL;
-  
+ 
   InitSolution(&sol, (prob.npontos) - 1);
   matrix = (int **)checked_malloc(sizeof(int *) * prob.npontos);  
-
-  for (int i = 0; i < prob.npontos; i++){
+  for (int i = 0; i < prob.npontos; i++)
     matrix[i] = (int*)checked_malloc(sizeof(int) * prob.npontos);
-    for (int j = i + 1; j < prob.npontos - 1; j++)
+
+  //preeenche a matriz de adjacencias
+  for (int i = 0; i < prob.npontos; i++){
+      matrix[i][i] = 0;
+    for (int j = i + 1; j < prob.npontos; j++)
     {
       //se o Ponto Inicial == Ponto Final nao é necessário aplicar o algoritmo
       if ((prob.pontos[j].x != prob.pontos[j + 1].x) || (prob.pontos[j].y != prob.pontos[j + 1].y)){
-        DijkstraMagic(prob, wt, st, prob.pontos[i].x, prob.pontos[i].y, prob.pontos[j].x, prob.pontos[j].y);   
-        sol->custo += wt[prob.pontos[i+1].x][prob.pontos[i+1].y];
-        Path_AtoB(st, wt, prob, prob.pontos[i+1].x, prob.pontos[i+1].y, prob.pontos[i].x, prob.pontos[i].y, sol, idx);        
-        printf("%d\n", sol->custo);
+        DijkstraMagic(prob, wt, st, prob.pontos[i].x, prob.pontos[i].y, prob.pontos[j].x, prob.pontos[j].y);  
+        sol->custo += wt[prob.pontos[j].x][prob.pontos[j].y];
+        Path_AtoB(st, wt, prob, prob.pontos[j].x, prob.pontos[j].y, prob.pontos[i].x, prob.pontos[i].y, sol, idx);        
+        //printf("%d\n", sol->custo);
       }
-      matrix[i][j] = sol->custo;      
+      matrix[i][j] = wt[prob.pontos[j].x][prob.pontos[j].y];
+      if(i > 0) //não é necessário guardar o caminho de volta para o vertice inicials
+        matrix[j][i] = (matrix[i][j] - prob.mapa[prob.pontos[j].x][prob.pontos[j].y]) + prob.mapa[prob.pontos[i].x][prob.pontos[i].y];
       if(sol->custo == -1) break; //nao necessita de repetir a função (modoC)     
     }
     //não tenho a certeza se o break quebra os dois fors então fica aqui o outro por segurança
     if(sol->custo == -1) break; //nao necessita de repetir a função (modoC) 
   }
-
-  for(int i = 0; i < prob.npontos; i++){
-    for(int j = 0; j < prob.npontos; j++){
-      printf("%d ", matrix[i][j]);
-    }
-    printf("\n");
+  
+for (int i = 0; i < prob.npontos; i++)
+{
+  for (int j = 0; j < prob.npontos; j++)
+  {
+    printf("%d ", matrix[i][j]);
+  }
+  printf("\n");
   } 
   return sol;
 }
@@ -288,7 +294,7 @@ void InsertAndRelax_Adjs(Heap *h, HeapNode *V, int **wt, vertex **st, problema P
   int x = V->coord.x, y = V->coord.y, X, Y;
   int Adjs[8][2] = {{1, 2}, {-1, -2}, {-1, 2}, {1, -2}, {2, 1}, {-2, -1}, {2, -1}, {-2, 1}};
 
-  for (int i = 0; i < 8; i++){
+  for (int i = 0; i < 8; i++){ 
     if ((((X = Adjs[i][0] + x) >= 0) && (X < P.nlinhas)) && (((Y = Adjs[i][1] + y) >= 0) && (Y < P.ncolunas))){
       if (P.mapa[X][Y] != 0){
         //insere no heap se nunca teve no heap
@@ -377,4 +383,35 @@ void InitSolution(solucao **S, int size){
   (*S)->custo = 0;
 }
 
+
+void PermutationBeast(int *array, int i, int length)
+{
+  int aux;
+  if (length == i)
+  {
+    printArr(array, length);
+    return;
+  }
+  int j = i;
+  for (j = i; j < length; j++)
+  {
+    aux = array[i];
+    array[i] = array[j];
+    array[j] = aux; 
+    PermutationBeast(array, i + 1, length);
+    aux = array[i];
+    array[i] = array[j];
+    array[j] = aux;
+  }
+  return;
+}
+
+//Prints the array
+void printArr(int *a, int n)
+{
+  for (int i = 0; i < n; i++){
+    printf("%d", a[i]);
+  }
+  printf("\n");
+}
 
