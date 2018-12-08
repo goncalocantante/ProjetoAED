@@ -40,7 +40,7 @@ int TrapedPoint(problema, int, int);
 void RelaxEdge(Heap *, int **, int ***, problema, vertex *, int, int);
 void print_sol(FILE *, problema *, solucao *);
 
-int DijkstraMagic(problema, int **, int ***, int, int, int, int, solucao *, int *);
+int DijkstraMagic(problema, int **, int ***, int, int, int, int);
 void InitSolution(solucao **, int);
 problema *ler_problema(FILE *, int ****, int ***);
 int validate_problem(problema);

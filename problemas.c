@@ -128,15 +128,10 @@ solucao *solve_problem(FILE *fp, problema prob, int ***st, int **wt ){
 
 //Encontra o melhor caminho entre A e B
 //Retorna o numero de pontos do caminho
-int DijkstraMagic(problema prob, int **wt, int ***st,int Xa, int Ya, int Xb, int Yb, solucao *sol, int *idx){
+int DijkstraMagic(problema prob, int **wt, int ***st,int Xa, int Ya, int Xb, int Yb){
   Heap *heap = NULL;
   vertex *V; 
-  
-  //se o Ponto Inicial == Ponto Final nao é necessário aplicar o algoritmo
-  if ((Xa == Xb) && (Ya == Yb)){
-    (*idx)++;
-    return 0;
-  }
+
   //inicializa os vetores auxiliares
   for (int v = 0; v < prob.nlinhas; v++)
   {
@@ -167,32 +162,57 @@ int DijkstraMagic(problema prob, int **wt, int ***st,int Xa, int Ya, int Xb, int
     HeapDeleteMostPri(heap);
   }
   freeHeap(heap);
-  sol->custo += wt[Xb][Yb];
-  Path_AtoB(st, wt, prob, Xb, Yb, Xa, Ya, sol, *idx);
-  if(sol->custo == -1) return 1; //nao necessita de repetir a função (modoB)
-  (*idx)++;
+  
   return 0;
 }
 
+
+/* solucao *modoC (problema prob, int ***st, int **wt){
+  solucao *sol;
+  int stop = 0, idx = 0;
+  InitSolution(&sol, (prob.npontos) - 1);
+  for (int j = 0; j < prob.npontos - 1; j++){
+    for (int i = j + 1; i < prob.npontos - 1; i++)
+    {
+      stop = DijkstraMagic(prob, wt, st, prob.pontos[j][0], prob.pontos[j][1], prob.pontos[i][0], prob.pontos[i][1], sol, &idx);
+      if (stop) break;
+    }
+  }
+  return sol;
+} */
 solucao *modoB (problema prob, int ***st, int **wt){
   int idx = 0 , stop = 0;
   solucao *sol;
   InitSolution(&sol, (prob.npontos) - 1);
+  
   for (int i = 0; i < prob.npontos - 1; i++)
   {
-    stop = DijkstraMagic(prob, wt, st, prob.pontos[i][0], prob.pontos[i][1], prob.pontos[i+1][0], prob.pontos[i+1][1], sol, &idx);
-    if (stop) break;
+    //se o Ponto Inicial == Ponto Final nao é necessário aplicar o algoritmo
+     if ((prob.pontos[i][0] == prob.pontos[i + 1][0]) && (prob.pontos[i][1] == prob.pontos[i + 1][1])){
+      idx++;
+      i++;
+     }
+    stop = DijkstraMagic(prob, wt, st, prob.pontos[i][0], prob.pontos[i][1], prob.pontos[i+1][0], prob.pontos[i+1][1]);
+    sol->custo += wt[prob.pontos[i+1][0]][prob.pontos[i+1][1]];
+    Path_AtoB(st, wt, prob, prob.pontos[i+1][0], prob.pontos[i+1][1], prob.pontos[i][0], prob.pontos[i][1], sol, idx);
+    if(sol->custo == -1) break; //nao necessita de repetir a função (modoB)
+    idx++;
   }
   return sol;
 }
 
-solucao *modoA (problema prob, int ***st, int **wt){
+ solucao *modoA (problema prob, int ***st, int **wt){
   solucao *sol = NULL;
   int idx = 0;
   InitSolution(&sol, (prob.npontos)-1);
-  DijkstraMagic(prob, wt, st, prob.pontos[0][0], prob.pontos[0][1], prob.pontos[1][0], prob.pontos[1][1], sol, &idx);
+  //se o Ponto Inicial == Ponto Final nao é necessário aplicar o algoritmo
+  if ((prob.pontos[0][0] != prob.pontos[1][0]) || (prob.pontos[0][1] != prob.pontos[1][1])){
+    DijkstraMagic(prob, wt, st, prob.pontos[0][0], prob.pontos[0][1], prob.pontos[1][0], prob.pontos[1][1]);
+    sol->custo += wt[prob.pontos[1][0]][prob.pontos[1][1]];
+    Path_AtoB(st, wt, prob, prob.pontos[1][0], prob.pontos[1][1], prob.pontos[0][0], prob.pontos[0][1], sol, idx);
+  }
   return sol;
-}
+} 
 
 Item CreateVertex(int x, int y, int key){ 
   vertex * vert = (vertex*)checked_malloc(sizeof(vertex));
