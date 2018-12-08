@@ -147,7 +147,6 @@ int DijkstraMagic(problema prob, int **wt, vertex **st,int Xa, int Ya, int Xb, i
   {
     for (int w = 0; w < prob.ncolunas; w++)
     {
-      //[v][w][0] = x  || [v][w][1] = y
       st[v][w].x = -1;
       st[v][w].y = -1;
       wt[v][w] = INT_MAX / 2;
@@ -179,7 +178,7 @@ int DijkstraMagic(problema prob, int **wt, vertex **st,int Xa, int Ya, int Xb, i
 
 solucao *modoC (problema prob, vertex **st, int **wt){
   solucao *sol;
-  int stop = 0, idx = 0;
+  int idx = 0;
   int **matrix = NULL;
   
   InitSolution(&sol, (prob.npontos) - 1);
@@ -200,35 +199,35 @@ solucao *modoC (problema prob, vertex **st, int **wt){
       if(sol->custo == -1) break; //nao necessita de repetir a função (modoC)     
     }
     //não tenho a certeza se o break quebra os dois fors então fica aqui o outro por segurança
-    if(sol->custo == -1) break; //nao necessita de repetir a função (modoC)
+    if(sol->custo == -1) break; //nao necessita de repetir a função (modoC) 
   }
 
- /*  for(int i = 0; i < prob.npontos; i++){
+  for(int i = 0; i < prob.npontos; i++){
     for(int j = 0; j < prob.npontos; j++){
       printf("%d ", matrix[i][j]);
     }
     printf("\n");
-  } */
+  } 
   return sol;
 }
 
 solucao *modoB (problema prob, vertex **st, int **wt){
-  int idx = 0 , stop = 0;
+  int idx = 0;
   solucao *sol;
   InitSolution(&sol, (prob.npontos) - 1);
   
   for (int i = 0; i < prob.npontos - 1; i++)
   {
-    //se o Ponto Inicial == Ponto Final nao é necessário aplicar o algoritmo
-     if ((prob.pontos[i].x == prob.pontos[i + 1].x) && (prob.pontos[i].y == prob.pontos[i + 1].y)){
+     //se o Ponto Inicial == Ponto Final nao é necessário aplicar o algoritmo
+    if ((prob.pontos[i].x == prob.pontos[i + 1].x) && (prob.pontos[i].y == prob.pontos[i + 1].y)){
       idx++;
-      i++;
-     }
-    DijkstraMagic(prob, wt, st, prob.pontos[i].x, prob.pontos[i].y, prob.pontos[i+1].x, prob.pontos[i+1].y);
-    sol->custo += wt[prob.pontos[i+1].x][prob.pontos[i+1].y];
-    Path_AtoB(st, wt, prob, prob.pontos[i+1].x, prob.pontos[i+1].y, prob.pontos[i].x, prob.pontos[i].y, sol, idx);
-    if(sol->custo == -1) break; //nao necessita de repetir a função (modoB)
-    idx++;
+    }else{
+      DijkstraMagic(prob, wt, st, prob.pontos[i].x, prob.pontos[i].y, prob.pontos[i+1].x, prob.pontos[i+1].y);
+      sol->custo += wt[prob.pontos[i+1].x][prob.pontos[i+1].y];
+      Path_AtoB(st, wt, prob, prob.pontos[i+1].x, prob.pontos[i+1].y, prob.pontos[i].x, prob.pontos[i].y, sol, idx);
+      if(sol->custo == -1) break; //nao necessita de repetir a função (modoB)
+      idx++;
+    }
   }
   return sol;
 }
@@ -376,7 +375,6 @@ void InitSolution(solucao **S, int size){
     (*S)->n_passos[i] = 0;
   }
   (*S)->custo = 0;
-  (*S)->valido = 0;
 }
 
 

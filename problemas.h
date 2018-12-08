@@ -7,7 +7,6 @@
 #include "queue.h"
 
 typedef struct _vertex{
-  int key;
   int x,y;
 }vertex;
 
@@ -16,13 +15,11 @@ typedef struct {
   int ncolunas;
   char modo;
   int npontos;
-  //int **pontos;
   vertex *pontos;
   int **mapa;
 }problema;
 
 typedef struct {
-  int valido;
   int custo;
   int *n_passos;
   vertex **passos;
