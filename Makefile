@@ -7,7 +7,6 @@ main: clean main.o problemas.o utils.o file.o queue.o
 main.o: main.c file.h problemas.h 
 	gcc $(CFLAGS) -c main.c
 
-
 file.o: file.c file.h utils.h
 	gcc $(CFLAGS) -c file.c
 
