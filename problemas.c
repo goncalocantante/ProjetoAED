@@ -160,7 +160,7 @@ void DijkstraMagic(problema prob, int **wt, vertex **st,int Xa, int Ya, int Xb, 
   {
     V = getMostPri(heap);
   //Verificar se todos os pontos do caminho já foram verificados (Parte C)
-  if (StopHeap(stop)) break;
+  /* if (StopDijkstra(stop, size)) break; */
 
   /* if (V->coord.x == Xb && V->coord.y == Yb) 
     break;                                          |||Em vez disto o que tá em cima||| */
@@ -181,7 +181,8 @@ solucao *modoC (problema prob, vertex **st, int **wt){
   solucao *sol;
   int idx = 0,  *vert = (int*)checked_malloc(sizeof(int) * (prob.npontos-1)), i;
   int **matrix = NULL;
-
+  int *stop = NULL;
+ 
   InitSolution(&sol, (prob.npontos) - 1);
   matrix = (int **)checked_malloc(sizeof(int *) * prob.npontos);  
   for (int i = 0; i < prob.npontos; i++)
@@ -192,9 +193,8 @@ solucao *modoC (problema prob, vertex **st, int **wt){
       matrix[i][i] = 0;
     for (int j = i + 1; j < prob.npontos; j++)
     {
-      //se o Ponto Inicial == Ponto Final nao é necessário aplicar o algoritmo
       if ((prob.pontos[j].x != prob.pontos[j + 1].x) || (prob.pontos[j].y != prob.pontos[j + 1].y)){
-        DijkstraMagic(prob, wt, st, prob.pontos[i].x, prob.pontos[i].y, prob.pontos[j].x, prob.pontos[j].y);  
+        DijkstraMagic(prob, wt, st, prob.pontos[i].x, prob.pontos[i].y, prob.pontos[j].x, prob.pontos[j].y, stop);  
         sol->custo += wt[prob.pontos[j].x][prob.pontos[j].y];
         Path_AtoB(st, wt, prob, prob.pontos[j].x, prob.pontos[j].y, prob.pontos[i].x, prob.pontos[i].y, sol, idx);        
         //printf("%d\n", sol->custo);
@@ -204,6 +204,7 @@ solucao *modoC (problema prob, vertex **st, int **wt){
         matrix[j][i] = (matrix[i][j] - prob.mapa[prob.pontos[j].x][prob.pontos[j].y]) + prob.mapa[prob.pontos[i].x][prob.pontos[i].y];
       if(sol->custo == -1) break; //nao necessita de repetir a função (modoC)     
     }
+    free(stop);
     //não tenho a certeza se o break quebra os dois fors então fica aqui o outro por segurança
     if(sol->custo == -1) break; //nao necessita de repetir a função (modoC) 
   }
