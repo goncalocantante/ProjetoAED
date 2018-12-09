@@ -3,34 +3,34 @@
 #include "utils.h"
 #include "problemas.h"
 
-problema *ler_problema(FILE *fp, vertex ***st, int ***wt, solucao **sol)
+Problema *ler_problema(FILE *fp, Vertex ***st, int ***wt, Passeio **passeio)
 {
   int i = 0, j = 0, n_scan = 0, discard = 0, discard1 = 0;
-  problema *prob = NULL;
+  Problema *prob = NULL;
 
-  prob = (problema *)checked_malloc(sizeof(problema));
+  prob = (Problema *)checked_malloc(sizeof(Problema));
   //retira os dados da primeira linha do ficheiro
   n_scan = fscanf (fp,"%d %d %c %d", &prob->nlinhas , &prob->ncolunas, &prob->modo, &prob->npontos);
-  if (n_scan == EOF) {    //indica se há outro problema ou não 
+  if (n_scan == EOF) {    //indica se há outro Problema ou não  
     free(prob);
     return NULL;
   }
-  //só continua se o problema for válido
+  //só continua se o Problema for válido
   if (validate_problem(*prob) == 0)
   {
     for (i = 0; i < prob->npontos; i++){
       n_scan = fscanf(fp, "%d %d", &discard, &discard1);
     }
-    for (i = 0; i < prob->nlinhas; i++){
+    for (i = 0; i < prob->nlinhas; i++){               //#TODO tentar fazer sem for for somar os limites 
       for (int j = 0; j < prob->ncolunas; j++){
         n_scan = fscanf(fp, "%d", &discard);
       }
     }
-    InitSolution(sol, ((prob->npontos) - 1));
-    (*sol)->custo = -1;
+    InitPasseio(passeio, 0);
+    (*passeio)->CustoTotal = -1;
   }else{
     //guarda coordenadas dos pontos numa matriz
-    prob->pontos = (vertex*)checked_malloc(sizeof(vertex)*prob->npontos);
+    prob->pontos = (Vertex*)checked_malloc(sizeof(Vertex)*prob->npontos);
     for (i = 0; i < prob->npontos; i++){
         n_scan = fscanf(fp, "%d %d", &prob->pontos[i].x, &prob->pontos[i].y);
     }
@@ -38,11 +38,11 @@ problema *ler_problema(FILE *fp, vertex ***st, int ***wt, solucao **sol)
     prob->mapa = (int**)checked_malloc(sizeof(int*)*prob->nlinhas);
     //vetores auxiliares para algoritmo de Dijkstra
     (*wt) = (int **)checked_malloc(sizeof(int *) * prob->nlinhas);
-    (*st) = (vertex**)checked_malloc(sizeof(vertex*) * prob->nlinhas);
+    (*st) = (Vertex**)checked_malloc(sizeof(Vertex*) * prob->nlinhas);
     for (i = 0; i < prob->nlinhas; i++){
       prob->mapa[i] = (int*)checked_malloc(sizeof(int)*prob->ncolunas);
       (*wt)[i] = (int *)checked_malloc(sizeof(int) * prob->ncolunas);
-      (*st)[i] = (vertex *)checked_malloc(sizeof(vertex) * prob->ncolunas);
+      (*st)[i] = (Vertex *)checked_malloc(sizeof(Vertex) * prob->ncolunas);
       for (j = 0; j < prob->ncolunas; j++){
         n_scan = fscanf(fp,"%d", &prob->mapa[i][j]);
       
@@ -52,7 +52,7 @@ problema *ler_problema(FILE *fp, vertex ***st, int ***wt, solucao **sol)
   return prob;
 }
 
-int validate_problem(problema prob){
+int validate_problem(Problema prob){
   int ex_valido = 1;
 
   if ((prob.modo != 'A' && prob.modo != 'B' && prob.modo != 'C') || prob.nlinhas <= 0 || prob.ncolunas <= 0 || prob.npontos <= 0 ||
@@ -64,7 +64,7 @@ int validate_problem(problema prob){
 }
 
 //verifica se todos os pontos são acessiveis
-int validate_points(problema prob){
+int validate_points(Problema prob){
   for (int i = 0; i < prob.npontos; i++) {
     //se tiver fora da matriz
     if ((prob.pontos[i].x < 0) || (prob.pontos[i].x >= prob.nlinhas) || (prob.pontos[i].y < 0) || (prob.pontos[i].y >= prob.ncolunas))
@@ -79,7 +79,7 @@ int validate_points(problema prob){
   return 1;
 }
 
-int TrapedPoint (problema P, int x, int y){
+int TrapedPoint (Problema P, int x, int y){
   int Adjs[8][2] = {{1, 2}, {-1, -2}, {-1, 2}, {1, -2}, {2, 1}, {-2, -1}, {2, -1}, {-2, 1}}; 
   int X, Y;
   for(int i = 0; i < 8; i++){
@@ -92,16 +92,21 @@ int TrapedPoint (problema P, int x, int y){
 }
 
 //liberta memória alocada na estrutura
-void free_problema(problema *estrutura, vertex **st, int **wt, solucao *sol){
+void free_problema(Problema *estrutura, Vertex **st, int **wt, Passeio *passeio){
   int i;
-  for(i = 0; i < (estrutura->npontos) - 1; i++){
-    if(sol->passos[i] != NULL)
-        free(sol->passos[i]); 
+  if (passeio->passos != NULL){
+    for(i = 0; i < (estrutura->npontos) - 1; i++){
+      if(passeio->passos[i] != NULL){
+        if (passeio->passos[i]->passos != NULL){
+          free(passeio->passos[i]->passos);
+        } 
+        free(passeio->passos[i]); 
+      }
+    }
+    free(passeio->passos);
   }
-  free(sol->n_passos);
-  free(sol->passos);
-  free(sol);
-  
+  free(passeio);
+
   if (st != NULL){
     for (i = 0; i < estrutura->nlinhas; i++) {
         free(st[i]);
@@ -116,30 +121,33 @@ void free_problema(problema *estrutura, vertex **st, int **wt, solucao *sol){
   free(estrutura);
 }
 
-solucao *solve_problem(problema prob, vertex **st, int **wt ){
-  solucao *sol = NULL;
+Passeio *solve_problem(Problema prob, Vertex **st, int **wt ){
+  Passeio *passeio = NULL;
   if ( validate_points(prob) == 0) {
-    InitSolution(&sol, (prob.npontos)-1);
-    sol->custo = -1;
-    return sol;
+    InitPasseio(&passeio, (prob.npontos)-1);
+    passeio->CustoTotal = -1;
+    return passeio;
   } 
   if (prob.modo == 'A') {
-    sol = modoA(prob, st, wt); 
+    InitPasseio(&passeio, 1);
+    passeio->passos[0] = modoA(prob, st, wt); 
+    passeio->CustoTotal = passeio->passos[0]->custo;
   }
-  else if(prob.modo == 'B'){
-    sol = modoB(prob, st, wt);
+   else if(prob.modo == 'B'){
+    passeio = modoB(prob, st, wt);
   }
-  else if(prob.modo == 'C'){
-    sol = modoC(prob, st, wt);
-  }
-  return sol;
+ /*  else if(prob.modo == 'C'){
+    passeio = modoC(prob, st, wt);
+  } */
+  return passeio;
 }
 
 //Encontra o melhor caminho entre A e B
 //Retorna o numero de pontos do caminho
-void DijkstraMagic(problema prob, int **wt, vertex **st,int Xa, int Ya, int Xb, int Yb, int *stop){
+void DijkstraMagic(Problema prob, int **wt, Vertex **st,int Xa, int Ya, HeapNode *stop, int size){
   Heap *heap = NULL;
   HeapNode *V;
+
   //inicializa os vetores auxiliares
   for (int v = 0; v < prob.nlinhas; v++)
   {
@@ -160,12 +168,10 @@ void DijkstraMagic(problema prob, int **wt, vertex **st,int Xa, int Ya, int Xb, 
   {
     V = getMostPri(heap);
   //Verificar se todos os pontos do caminho já foram verificados (Parte C)
-  if (StopHeap(stop)) break;
+  if (StopDijkstra(stop, size, (V->coord.x), (V->coord.y) ) ) break;
 
   /* if (V->coord.x == Xb && V->coord.y == Yb) 
     break;                                          |||Em vez disto o que tá em cima||| */
-
-
 
   if (V->key != INT_MAX / 2)
   {
@@ -177,86 +183,116 @@ void DijkstraMagic(problema prob, int **wt, vertex **st,int Xa, int Ya, int Xb, 
 }
 
 
-solucao *modoC (problema prob, vertex **st, int **wt){
-  solucao *sol;
-  int idx = 0,  *vert = (int*)checked_malloc(sizeof(int) * (prob.npontos-1)), i;
-  int **matrix = NULL;
+Passeio *modoC (Problema prob, Vertex **st, int **wt){
+  int *vert = (int *)checked_malloc(sizeof(int) * prob.npontos), size, stop = 0;
+  HeapNode * vect;
+  Passo ***matrix = NULL;
+  Passeio *passeio;
 
-  InitSolution(&sol, (prob.npontos) - 1);
-  matrix = (int **)checked_malloc(sizeof(int *) * prob.npontos);  
+  matrix = (Passo ***)checked_malloc(sizeof(Passo**)*prob.npontos);  
   for (int i = 0; i < prob.npontos; i++)
-    matrix[i] = (int*)checked_malloc(sizeof(int) * prob.npontos);
+    matrix[i] = (Passo **)checked_malloc(sizeof(Passo*) * prob.npontos); 
 
   //preeenche a matriz de adjacencias
   for (int i = 0; i < prob.npontos; i++){
-      matrix[i][i] = 0;
-    for (int j = i + 1; j < prob.npontos; j++)
-    {
-      //se o Ponto Inicial == Ponto Final nao é necessário aplicar o algoritmo
-      if ((prob.pontos[j].x != prob.pontos[j + 1].x) || (prob.pontos[j].y != prob.pontos[j + 1].y)){
-        DijkstraMagic(prob, wt, st, prob.pontos[i].x, prob.pontos[i].y, prob.pontos[j].x, prob.pontos[j].y);  
-        sol->custo += wt[prob.pontos[j].x][prob.pontos[j].y];
-        Path_AtoB(st, wt, prob, prob.pontos[j].x, prob.pontos[j].y, prob.pontos[i].x, prob.pontos[i].y, sol, idx);        
-        //printf("%d\n", sol->custo);
-      }
-      matrix[i][j] = wt[prob.pontos[j].x][prob.pontos[j].y];
-      if(i > 0) //não é necessário guardar o caminho de volta para o vertice inicials
-        matrix[j][i] = (matrix[i][j] - prob.mapa[prob.pontos[j].x][prob.pontos[j].y]) + prob.mapa[prob.pontos[i].x][prob.pontos[i].y];
-      if(sol->custo == -1) break; //nao necessita de repetir a função (modoC)     
+
+    size = (prob.npontos - i + 1);
+    vect = (HeapNode *)checked_malloc(sizeof(HeapNode)*size);
+    //inicializa o vetor de pontos a que o Dijkstra tem de ir
+    for (int j = 0; j < size; j++){
+      vect[j].coord.x = prob.pontos[i+1+j].x;
+      vect[j].coord.y = prob.pontos[i + 1 + j].y;
+      vect[j].key = 0; //flag indica que o algoritmo Dijkstra ainda nao encontrou caminho para esse ponto
     }
-    //não tenho a certeza se o break quebra os dois fors então fica aqui o outro por segurança
-    if(sol->custo == -1) break; //nao necessita de repetir a função (modoC) 
+    //se o Ponto Inicial == Ponto Final nao é necessário aplicar o algoritmo
+    //if ((prob.pontos[j].x != prob.pontos[j + 1].x) || (prob.pontos[j].y != prob.pontos[j + 1].y)){
+    DijkstraMagic(prob, wt, st, prob.pontos[i].x, prob.pontos[i].y, vect, size);  
+    //guarda o caminho
+    for(int j = i+1; j < prob.npontos; j ++){
+      Path_AtoB(st, wt, prob, prob.pontos[j].x, prob.pontos[j].y, prob.pontos[i].x, prob.pontos[i].y, &(matrix[i][j]));
+      if( matrix[i][j]->custo == -1 ){
+        stop = 1;
+        break; //nao necessita de repetir a função (modoC)
+      }
+      matrix[i][j]->custo = wt[prob.pontos[j].x][prob.pontos[j].y];
+
+      if(i > 0){  //não é necessário guardar o caminho de volta para o vertice inicial
+        InitPasso( &(matrix[j][i]) , matrix[i][j]->n_passos ) ;
+        matrix[j][i]->custo = (matrix[i][j]->custo - prob.mapa[prob.pontos[j].x][prob.pontos[j].y]) + prob.mapa[prob.pontos[i].x][prob.pontos[i].y];
+      }
+    }
+    if(stop) break;
   }
 
-  for (int j = 1; j < (prob.npontos); j++)
+  //matriz feita
+
+   for (int j = 1; j < (prob.npontos); j++)
   { 
-    vert[j] = j;
+    vert[j] = j; //atribuir a cada ponto 1 número inteiro
   }
-  PermutationBeast(vert, 0, prob.npontos);
+  PermutationBeast(vert, 0, prob.npontos); 
   
-for (int i = 0; i < prob.npontos; i++)
-{
-  for (int j = 0; j < prob.npontos; j++)
+  for (int i = 0; i < prob.npontos; i++)
   {
-    printf("%d ", matrix[i][j]);
-  }
-  printf("\n");
+    for (int j = 1; j < prob.npontos; j++)
+    {
+      printf("%d %d\n", matrix[i][j]->custo , matrix[i][j]->custo);
+    }
+    printf("\n");
   } 
-  return sol;
-}
+  return passeio; //este return ta mal mas era so para nao dar erro
+} 
 
-solucao *modoB (problema prob, vertex **st, int **wt){
+Passeio *modoB (Problema prob, Vertex **st, int **wt){
   int idx = 0;
-  solucao *sol;
-  InitSolution(&sol, (prob.npontos) - 1);
-  
+  Passeio *passeio;
+  HeapNode V;
+
+  InitPasseio(&passeio, (prob.npontos) - 1);
   for (int i = 0; i < prob.npontos - 1; i++)
   {
      //se o Ponto Inicial == Ponto Final nao é necessário aplicar o algoritmo
     if ((prob.pontos[i].x == prob.pontos[i + 1].x) && (prob.pontos[i].y == prob.pontos[i + 1].y)){
-      idx++;
+      InitPasso(&(passeio->passos[idx]), 0);
     }else{
-      DijkstraMagic(prob, wt, st, prob.pontos[i].x, prob.pontos[i].y, prob.pontos[i+1].x, prob.pontos[i+1].y);
-      sol->custo += wt[prob.pontos[i+1].x][prob.pontos[i+1].y];
-      Path_AtoB(st, wt, prob, prob.pontos[i+1].x, prob.pontos[i+1].y, prob.pontos[i].x, prob.pontos[i].y, sol, idx);
-      if(sol->custo == -1) break; //nao necessita de repetir a função (modoB)
-      idx++;
+      //printf("ENTREI \n");
+      V.coord.x = prob.pontos[i+1].x;
+      V.coord.y = prob.pontos[i+1].y;
+      V.key = 0;
+      DijkstraMagic(prob, wt, st, prob.pontos[i].x, prob.pontos[i].y, &V, 1);
+      Path_AtoB(st, wt, prob, prob.pontos[i+1].x, prob.pontos[i+1].y, prob.pontos[i].x, prob.pontos[i].y, &(passeio->passos[idx]));
+      passeio->passos[idx]->custo = wt[prob.pontos[i + 1].x][prob.pontos[i + 1].y];
+      if(passeio->passos[idx]->custo == -1){
+        passeio->CustoTotal = -1;
+        break; //nao necessita de repetir a função (modoB)
+      }
     }
+    passeio->CustoTotal += passeio->passos[idx]->custo;
+    idx++;
   }
-  return sol;
-}
+  return passeio;
+} 
 
- solucao *modoA (problema prob, vertex **st, int **wt){
-  solucao *sol = NULL;
-  int idx = 0;
-  InitSolution(&sol, (prob.npontos)-1);
+ Passo *modoA (Problema prob, Vertex **st, int **wt){
+  Passo *passo;
+
+  HeapNode *V = (HeapNode *)checked_malloc(sizeof(HeapNode));
+  V->coord.x = prob.pontos[1].x;
+  V->coord.y = prob.pontos[1].y;
+  V->key = 0;
+
   //se o Ponto Inicial == Ponto Final nao é necessário aplicar o algoritmo
   if ((prob.pontos[0].x != prob.pontos[1].x) || (prob.pontos[0].y != prob.pontos[1].y)){
-    DijkstraMagic(prob, wt, st, prob.pontos[0].x, prob.pontos[0].y, prob.pontos[1].x, prob.pontos[1].y);
-    sol->custo += wt[prob.pontos[1].x][prob.pontos[1].y];
-    Path_AtoB(st, wt, prob, prob.pontos[1].x, prob.pontos[1].y, prob.pontos[0].x, prob.pontos[0].y, sol, idx);
-  }
-  return sol;
+
+    DijkstraMagic(prob, wt, st, prob.pontos[0].x, prob.pontos[0].y, V, 1);
+    Path_AtoB(st, wt, prob, prob.pontos[1].x, prob.pontos[1].y, prob.pontos[0].x, prob.pontos[0].y, &passo);
+    passo->custo += wt[prob.pontos[1].x][prob.pontos[1].y];
+
+  }else
+    InitPasso(&passo, 0);
+
+  free(V);
+  return passo;
 } 
 
 Item CreateHeapNode(int x, int y, int key){
@@ -267,37 +303,36 @@ Item CreateHeapNode(int x, int y, int key){
   return vert;
 }
 
-void Path_AtoB(vertex **st, int **wt, problema prob, int Xb, int Yb, int Xa, int Ya, solucao *S, int idx)
+void Path_AtoB(Vertex **st, int **wt, Problema prob, int Xb, int Yb, int Xa, int Ya, Passo **passo)
 {
   static int count = 0;
   static int aux = 0;
 
   //se nao há solução
   if (st[Xb][Yb].x == -1 || st[Xb][Yb].y == -1){
-    S->custo = -1;
+    InitPasso(passo, 0);
+    (*passo)->custo = -1;
     return;
   }
   //Incrementa o número de pontos do caminho
   count++;
   //Para de chamar recursivamente quando chega ao segundo ponto do percurso
   if ((st[Xb][Yb].x != Xa) || (st[Xb][Yb].y != Ya))
-  {
-    Path_AtoB(st, wt, prob, st[Xb][Yb].x, st[Xb][Yb].y, Xa, Ya, S, idx);
-  }
+    Path_AtoB(st, wt, prob, st[Xb][Yb].x, st[Xb][Yb].y, Xa, Ya, passo);
+  
   if ((st[Xb][Yb].x == Xa) && (st[Xb][Yb].y == Ya))
   {
     aux = 0;
-    S->passos[idx] = (vertex *)checked_malloc(sizeof(vertex)*count) ;
-    S->n_passos[idx] = count;
+    InitPasso(passo , count);
   }
-  S->passos[idx][aux].x = Xb;
-  S->passos[idx][aux].y = Yb;
+  (*passo)->passos[aux].x = Xb;
+  (*passo)->passos[aux].y = Yb;
   aux++;
   //reinicia o contador
   count = 0;
 }
 
-void InsertAndRelax_Adjs(Heap *h, HeapNode *V, int **wt, vertex **st, problema P)
+void InsertAndRelax_Adjs(Heap *h, HeapNode *V, int **wt, Vertex **st, Problema P)
 {
   int x = V->coord.x, y = V->coord.y, X, Y;
   int Adjs[8][2] = {{1, 2}, {-1, -2}, {-1, 2}, {1, -2}, {2, 1}, {-2, -1}, {2, -1}, {-2, 1}};
@@ -316,7 +351,7 @@ void InsertAndRelax_Adjs(Heap *h, HeapNode *V, int **wt, vertex **st, problema P
   }
 }
 
-void RelaxEdge(Heap *heap, int **wt, vertex **st, problema prob, HeapNode *V, int Xmove, int Ymove){
+void RelaxEdge(Heap *heap, int **wt, Vertex **st, Problema prob, HeapNode *V, int Xmove, int Ymove){
   //coordenadas do vértice adjacente
   int x = V->coord.x + Xmove;
   int y = V->coord.y + Ymove;
@@ -351,25 +386,27 @@ void printQueue(Heap * h)
   }
 }
 
-void print_sol(FILE *fp, problema *p, solucao *Sol)
+void print_sol(FILE *fp, Problema *p, Passeio *passeio)
 {
   int n_passos = 0;
 
-  if(Sol->custo == -1){
+  if(passeio->CustoTotal == -1){
     fprintf(fp, "%d %d %c %d %d %d\n", p->nlinhas, p->ncolunas, p->modo, p->npontos, -1, 0);
   }
   else {
-    for (int i = 0; i < ((p->npontos) - 1); i++){
-      n_passos += Sol->n_passos[i]; 
+
+    for (int i = 0; i < ((p->npontos) - 1); i++){ 
+      n_passos += passeio->passos[i]->n_passos; 
     }
-    fprintf(fp, "%d %d %c %d %d %d\n", p->nlinhas, p->ncolunas, p->modo, p->npontos, Sol->custo, n_passos);
+    fprintf(fp, "%d %d %c %d %d %d\n", p->nlinhas, p->ncolunas, p->modo, p->npontos, passeio->CustoTotal, n_passos);
     for (int i = 0; i < ((p->npontos) - 1); i++)
     {
-      for (int j = 0; j < Sol->n_passos[i]; j++)
+      for (int j = 0; j < passeio->passos[i]->n_passos; j++)
       {
-        fprintf(fp, "%d %d %d\n", Sol->passos[i][j].x, Sol->passos[i][j].y, p->mapa[Sol->passos[i][j].x][Sol->passos[i][j].y]);
+        fprintf(fp, "%d %d %d\n", passeio->passos[i]->passos[j].x, passeio->passos[i]->passos[j].y, p->mapa[passeio->passos[i]->passos[j].x][passeio->passos[i]->passos[j].y]);
       }
     }
+
   }
   fprintf(fp, "\n");
 }
@@ -379,18 +416,26 @@ int SentCoordinates(Item a, int NCols){
   return (A->coord.x * NCols + A->coord.y);
 }
 
-void InitSolution(solucao **S, int size){
-  if (size < 0) size = 0;
-  (*S) = (solucao *)checked_malloc(sizeof(solucao));
-  (*S)->n_passos = (int *)checked_malloc(sizeof(int) * size);
-  (*S)->passos = (vertex **)checked_malloc(sizeof(vertex*) * size);
-  for(int i = 0; i < size; i++){
-    (*S)->passos[i] = NULL;
-    (*S)->n_passos[i] = 0;
-  }
-  (*S)->custo = 0;
+void InitPasseio(Passeio **P, int size){
+  (*P) = (Passeio*)checked_malloc(sizeof(Passeio));
+  (*P)->CustoTotal = 0;
+  if (size > 0){
+   (*P)->passos = (Passo**)checked_malloc(sizeof(Passo*) * size);
+   for (int i = 0; i < size; i++)
+     (*P)->passos[i] = NULL;
+  }else
+   (*P)->passos = NULL;
 }
 
+void InitPasso (Passo **passo, int n_passos){
+  (*passo) = (Passo*)checked_malloc(sizeof(passo));
+  (*passo)->custo = 0;
+  (*passo)->n_passos = n_passos;
+  if (n_passos > 0){
+   (*passo)->passos = (Vertex*)checked_malloc(sizeof(Vertex)*n_passos);
+  }else
+    (*passo)->passos = NULL;
+}
 
 void PermutationBeast(int *array, int i, int length)
 {
@@ -423,9 +468,11 @@ void printArr(int *a, int n)
   printf("\n");
 }
 
-int StopDijkstra(int *stop, int size){   
+int StopDijkstra(HeapNode *stop, int size, int x, int y){   
   for(int i = 0; i < size; i++){
-    if (stop[i] != 0) return 1;   //se econtra algum ponto que nao foi visto
+    if(stop[i].coord.x == x  && stop[i].coord.y == y)
+      stop[i].key = 1;
+    if (stop[i].key != 0) return 1;   //se econtra algum ponto que nao foi visto
   }
   return 0;
 }
