@@ -7,6 +7,6 @@ for file in testfilesC/*; do
         echo FICHEIRO: $filename_without_extension
 
         ./tuktuk testfilesC/$filename
-        diff testfilesC/$filename_without_extension.cities testfilesC_walks/$filename_without_extension.walks;
+        diff testfilesC/$filename_without_extension.walks testfilesC_walks/$filename_without_extension.walks;
     fi
 done

@@ -45,7 +45,6 @@ Problema *ler_problema(FILE *fp, Vertex ***st, int ***wt, Passeio **passeio)
       (*st)[i] = (Vertex *)checked_malloc(sizeof(Vertex) * prob->ncolunas);
       for (j = 0; j < prob->ncolunas; j++){
         n_scan = fscanf(fp,"%d", &prob->mapa[i][j]);
-      
       }
     } 
   }
@@ -106,8 +105,7 @@ void free_problema(Problema *estrutura, Vertex **st, int **wt, Passeio *passeio)
     }
     free(passeio->passos);
   }
-    free(passeio);
-
+  free(passeio);
   if (st != NULL){
     for (i = 0; i < estrutura->nlinhas; i++) {
         free(st[i]);
@@ -192,18 +190,18 @@ Passeio *modoC(Problema prob, Vertex **st, int **wt)
   Passeio *passeio = NULL;
 
   matrix = (Passo ***)checked_malloc(sizeof(Passo **) * prob.npontos);
-  //for (int i = 0; i < prob.npontos; i++) //aloca memória para a matriz de adjacências
-    //matrix[i] = (Passo **)checked_malloc(sizeof(Passo *) * prob.npontos);
+  for (int i = 0; i < prob.npontos; i++) //aloca memória para a matriz de adjacências
+    matrix[i] = (Passo **)checked_malloc(sizeof(Passo *) * prob.npontos);
 
   //preeenche a matriz de adjacencias
   for (int i = 0; i < prob.npontos; i++){
-    matrix[i] = (Passo **)checked_malloc(sizeof(Passo *) * prob.npontos);
-    //InitPasso(&(matrix[i][i]), 0);
+    InitPasso(&(matrix[i][i]), 0);
     size = (prob.npontos - i - 1);
     InitVect(prob, &vect, size, i);
 
     //if ((prob.pontos[j].x != prob.pontos[j + 1].x) || (prob.pontos[j].y != prob.pontos[j + 1].y)){
     DijkstraMagic(prob, wt, st, prob.pontos[i].x, prob.pontos[i].y, vect, size);
+
     //guarda o caminho
     for (j = i + 1; j < prob.npontos; j++){
       Path_AtoB(st, wt, prob, prob.pontos[j].x, prob.pontos[j].y, prob.pontos[i].x, prob.pontos[i].y, &(matrix[i][j]));
@@ -212,6 +210,10 @@ Passeio *modoC(Problema prob, Vertex **st, int **wt)
         break;
       }
       matrix[i][j]->custo = wt[prob.pontos[j].x][prob.pontos[j].y];
+      //calcula posição transposta
+      //InitPasso(&(matrix[j][i]), matrix[i][j]->n_passos);  
+      Path_AtoB(st, wt, prob, prob.pontos[i].x, prob.pontos[i].y, prob.pontos[j].x, prob.pontos[j].y, &(matrix[j][i]));
+      matrix[j][i]->custo = wt[prob.pontos[i].x][prob.pontos[i].y];
     }
     free(vect);    
     if (stop){
@@ -221,21 +223,19 @@ Passeio *modoC(Problema prob, Vertex **st, int **wt)
     }
   }
 
-  //calcula a parte abaixo da diagonal inferior da matriz
-  for (int i = 0; i < prob.npontos; i++){
-
+  for(int i = 0; i < prob.npontos; i++){
+    for (int j = 0; j < prob.npontos; j++){
+      printf(" %d ", matrix[i][j]->custo);
+    } 
+    printf("\n");  
   }
-
-
-
-
-
   InitPasseio(&passeio, (prob.npontos - 1));
   passeio->CustoTotal = INT_MAX / 2;
   for (int j = 1; j < prob.npontos; j++)
   {
     vert[j - 1] = j; //atribuir a cada ponto 1 número inteiro
   }
+
   PermutationBeast(vert, 0, prob.npontos - 1, matrix, passeio);
 
   return passeio; //este return ta mal mas era so para nao dar erro
@@ -388,19 +388,23 @@ void print_sol(FILE *fp, Problema *p, Passeio *passeio)
 {
   int n_passos = 0;
 
+  
   if(passeio->CustoTotal == -1){
     fprintf(fp, "%d %d %c %d %d %d\n", p->nlinhas, p->ncolunas, p->modo, p->npontos, -1, 0);
   }
   else {
-    for (int i = 0; i < ((p->npontos) - 1); i++){ 
-      n_passos += passeio->passos[i]->n_passos; 
+    for (int i = 0; i < passeio->n_passos; i++){
+      if (passeio->passos[i] != NULL)
+        n_passos += passeio->passos[i]->n_passos; 
     }
     fprintf(fp, "%d %d %c %d %d %d\n", p->nlinhas, p->ncolunas, p->modo, p->npontos, passeio->CustoTotal, n_passos);
-    for (int i = 0; i < ((p->npontos) - 1); i++)
-    {
-      for (int j = 0; j < passeio->passos[i]->n_passos; j++)
-      {
-        fprintf(fp, "%d %d %d\n", passeio->passos[i]->passos[j].x, passeio->passos[i]->passos[j].y, p->mapa[passeio->passos[i]->passos[j].x][passeio->passos[i]->passos[j].y]);
+    printf("passeio n passos = %d\n", passeio->n_passos);
+    for (int i = 0; i < passeio->n_passos; i++){
+      if (passeio->passos[i] != NULL){
+        for (int j = 0; j < passeio->passos[i]->n_passos; j++)
+        {
+            fprintf(fp, "%d %d %d\n", passeio->passos[i]->passos[j].x, passeio->passos[i]->passos[j].y, p->mapa[passeio->passos[i]->passos[j].x][passeio->passos[i]->passos[j].y]);
+        }
       }
     }
   }
