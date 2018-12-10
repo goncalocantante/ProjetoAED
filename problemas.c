@@ -137,7 +137,7 @@ solucao *solve_problem(problema prob, vertex **st, int **wt ){
 
 //Encontra o melhor caminho entre A e B
 //Retorna o numero de pontos do caminho
-void DijkstraMagic(problema prob, int **wt, vertex **st,int Xa, int Ya, int Xb, int Yb, int *stop){
+void DijkstraMagic(problema prob, int **wt, vertex **st,int Xa, int Ya, int Xb, int Yb){
   Heap *heap = NULL;
   HeapNode *V;
   //inicializa os vetores auxiliares
@@ -162,8 +162,8 @@ void DijkstraMagic(problema prob, int **wt, vertex **st,int Xa, int Ya, int Xb, 
   //Verificar se todos os pontos do caminho já foram verificados (Parte C)
   /* if (StopDijkstra(stop, size)) break; */
 
-  /* if (V->coord.x == Xb && V->coord.y == Yb) 
-    break;                                          |||Em vez disto o que tá em cima||| */
+  if (V->coord.x == Xb && V->coord.y == Yb) 
+    break;                                          //|||Em vez disto o que tá em cima||| */
 
 
 
@@ -194,7 +194,7 @@ solucao *modoC (problema prob, vertex **st, int **wt){
     for (int j = i + 1; j < prob.npontos; j++)
     {
       if ((prob.pontos[j].x != prob.pontos[j + 1].x) || (prob.pontos[j].y != prob.pontos[j + 1].y)){
-        DijkstraMagic(prob, wt, st, prob.pontos[i].x, prob.pontos[i].y, prob.pontos[j].x, prob.pontos[j].y, stop);  
+        DijkstraMagic(prob, wt, st, prob.pontos[i].x, prob.pontos[i].y, prob.pontos[j].x, prob.pontos[j].y);  
         sol->custo += wt[prob.pontos[j].x][prob.pontos[j].y];
         Path_AtoB(st, wt, prob, prob.pontos[j].x, prob.pontos[j].y, prob.pontos[i].x, prob.pontos[i].y, sol, idx);        
         //printf("%d\n", sol->custo);
@@ -204,25 +204,24 @@ solucao *modoC (problema prob, vertex **st, int **wt){
         matrix[j][i] = (matrix[i][j] - prob.mapa[prob.pontos[j].x][prob.pontos[j].y]) + prob.mapa[prob.pontos[i].x][prob.pontos[i].y];
       if(sol->custo == -1) break; //nao necessita de repetir a função (modoC)     
     }
-    free(stop);
     //não tenho a certeza se o break quebra os dois fors então fica aqui o outro por segurança
     if(sol->custo == -1) break; //nao necessita de repetir a função (modoC) 
   }
 
-  for (int j = 1; j < (prob.npontos); j++)
+  for (int j = 1; j < (prob.npontos) - 1; j++)
   { 
-    vert[j] = j;
+    vert[j - 1] = j;
   }
-  PermutationBeast(vert, 0, prob.npontos);
+  PermutationBeast(vert, 0, prob.npontos - 1);
   
-for (int i = 0; i < prob.npontos; i++)
-{
-  for (int j = 0; j < prob.npontos; j++)
-  {
-    printf("%d ", matrix[i][j]);
-  }
-  printf("\n");
-  } 
+// for (int i = 0; i < prob.npontos; i++)
+// {
+//   for (int j = 0; j < prob.npontos; j++)
+//   {
+//     printf("%d ", matrix[i][j]);
+//   }
+//   printf("\n");
+//   } 
   return sol;
 }
 
@@ -398,7 +397,9 @@ void PermutationBeast(int *array, int i, int length)
   int aux;
   if (length == i)
   {
-    printArr(array, length);   /* Aqui termina uma iteração */       //vai tar aqui uma funçao que calcula o peso do caminho para aquela iteração
+    min = get_Passeio(min, array, lenght, matrix);
+    // printArr(array, length);   /* Aqui termina uma iteração */       //vai tar aqui uma funçao que calcula o peso do caminho para aquela iteração
+
     return;
   }
   int j = i;
@@ -429,4 +430,16 @@ int StopDijkstra(int *stop, int size){
     if (stop[i] != 0) return 1;   //se econtra algum ponto que nao foi visto
   }
   return 0;
+}
+
+Passeio *get_Passeio(Passeio *min, int *array, int length, passo **matrix){
+  Passeio *anal = NULL;  //Passei em analise
+  //inicializar anal
+
+  for(int i = 1; i < lenght; i++){
+    anal->CustoTotal += matrix[array[i]][array[i + 1]].custo;
+    if(anal->CustoTotal > min->CustoTotal)return min;
+    anal->passos[i] = matrix[array[i]][array[i + 1]]
+  }
+  return anal;
 }
