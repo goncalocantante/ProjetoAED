@@ -68,6 +68,6 @@ Passeio *modoC(Problema, Vertex **, int **);
 int SentCoordinates(Item, int);
 
 int StopDijkstra(HeapNode *, int, int, int);
-void printArr(int *, int); ///Melhora para o Dijkstra e Maquina de Permutações
-void PermutationBeast(int *a, int size, int n);
+void printArr(int *, int, Passo ***, Passeio *); ///Melhora para o Dijkstra e Maquina de Permutações
+void PermutationBeast(int *, int , int , Passo ***, Passeio *);
 #endif

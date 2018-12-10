@@ -28,6 +28,7 @@ Problema *ler_problema(FILE *fp, Vertex ***st, int ***wt, Passeio **passeio)
     }
     InitPasseio(passeio, 0);
     (*passeio)->CustoTotal = -1;
+    (*passeio)->n_passos = 0;
   }else{
     //guarda coordenadas dos pontos numa matriz
     prob->pontos = (Vertex*)checked_malloc(sizeof(Vertex)*prob->npontos);
@@ -182,7 +183,10 @@ Passeio *modoC (Problema prob, Vertex **st, int **wt){
   int size, stop = 0, j, *vert = (int *)checked_malloc(sizeof(int) * (prob.npontos-1));
   HeapNode * vect;
   Passo ***matrix = NULL;
-  Passeio *passeio = NULL; //inicializa-se logo
+  Passeio *passeio = NULL; 
+
+  InitPasseio(&passeio, (prob.npontos - 1)); 
+  passeio->CustoTotal = INT_MAX/2;
 
   matrix = (Passo ***)checked_malloc(sizeof(Passo**)*prob.npontos);  
   for (int i = 0; i < prob.npontos; i++)                                      //aloca memória para a matriz de adjacências
@@ -209,7 +213,6 @@ Passeio *modoC (Problema prob, Vertex **st, int **wt){
     //if ((prob.pontos[j].x != prob.pontos[j + 1].x) || (prob.pontos[j].y != prob.pontos[j + 1].y)){
     DijkstraMagic(prob, wt, st, prob.pontos[i].x, prob.pontos[i].y, vect, size);  
 
-
     //printf("numero de pontos %d\n", prob.npontos);
 
     //guarda o caminho
@@ -221,36 +224,34 @@ Passeio *modoC (Problema prob, Vertex **st, int **wt){
         break; 
       }
       matrix[i][j]->custo = wt[prob.pontos[j].x][prob.pontos[j].y];
-      printf("%d  ", matrix[i][j]->custo);
       //calcula posição transposta
       InitPasso( &(matrix[j][i]) , matrix[i][j]->n_passos) ;
       matrix[j][i]->custo = (matrix[i][j]->custo - prob.mapa[prob.pontos[j].x][prob.pontos[j].y]) + prob.mapa[prob.pontos[i].x][prob.pontos[i].y];
     }  
-
     if(stop) break;
-    printf(" /n \n");
-
   }
 
-  if (stop) return passeio;
+  if (stop) {
+    passeio->CustoTotal = -1;
+    return passeio;
+  }
 
   for (int j = 1; j < prob.npontos; j++)
   { 
     vert[j - 1] = j; //atribuir a cada ponto 1 número inteiro
   }
   printf("Lets go  \n");
-  PermutationBeast(vert, 0, prob.npontos-1); 
-
+  PermutationBeast(vert, 0, prob.npontos-1, matrix, passeio); 
   
-  for (int i = 0; i < prob.npontos; i++)
+ /*  for (int i = 0; i < prob.npontos; i++)
   {
     for (int j = 1; j < prob.npontos; j++)
     {
-      printf("%d\n", matrix[i][j]->custo);
+      printf("%d %d: %d\n",i, j, matrix[i][j]->custo);
     }
     printf("\n");
   } 
-
+ */
   printf("acabei \n");
 
   return passeio; //este return ta mal mas era so para nao dar erro
@@ -404,7 +405,8 @@ void printQueue(Heap * h)
 void print_sol(FILE *fp, Problema *p, Passeio *passeio)
 {
   int n_passos = 0;
-
+  
+  printf("%d custo total\n", passeio->CustoTotal);
   if(passeio->CustoTotal == -1){
     fprintf(fp, "%d %d %c %d %d %d\n", p->nlinhas, p->ncolunas, p->modo, p->npontos, -1, 0);
   }
@@ -455,12 +457,12 @@ void InitPasso (Passo **passo, int n_passos){
     (*passo)->passos = NULL;
 }
 
-void PermutationBeast(int *array, int i, int length)
+void PermutationBeast(int *array, int i, int length, Passo ***matrix , Passeio *best_passeio)
 {
   int aux;
   if (length == i)
   {
-    printArr(array, length);   /* Aqui termina uma iteração */       //vai tar aqui uma funçao que calcula o peso do caminho para aquela iteração
+    printArr(array, length, matrix , best_passeio);   /* Aqui termina uma iteração */       //vai tar aqui uma funçao que calcula o peso do caminho para aquela iteração
     return;
   }
   int j = i;
@@ -469,7 +471,7 @@ void PermutationBeast(int *array, int i, int length)
     aux = array[i];
     array[i] = array[j];           
     array[j] = aux;
-    PermutationBeast(array, i + 1, length);  
+    PermutationBeast(array, i + 1, length, matrix, best_passeio);  
     aux = array[i];                          
     array[i] = array[j];                   
     array[j] = aux;                            
@@ -478,12 +480,25 @@ void PermutationBeast(int *array, int i, int length)
 }
 
 //Prints the array
-void printArr(int *a, int n)
+void printArr(int *a, int n, Passo ***matrix, Passeio *passeio_min)
 {
-  for (int i = 0; i < n; i++){
-    printf("%d", a[i]);
+  Passeio * passeio_atual;
+  InitPasseio(&passeio_atual, n);
+
+  for (int i = 0; i < n-1; i++){
+  //este meu vetor passa a apontar para a posição da matriz
+  passeio_atual->passos[i] = matrix[a[i]][a[i+1]]; //custo
+  passeio_atual->CustoTotal += matrix[a[i]][a[i + 1]]->custo;
   }
-  printf("\n");
+
+  if (passeio_atual->CustoTotal <  passeio_min->CustoTotal){
+    passeio_min->CustoTotal = passeio_atual->CustoTotal;
+    passeio_min->n_passos = passeio_atual->n_passos; //nao está inicializado
+    passeio_atual->passos = passeio_atual->passos;
+  }
+
+  free(passeio_atual->passos);
+  free(passeio_atual);
 }
 
 int StopDijkstra(HeapNode *stop, int size, int x, int y){   
