@@ -125,6 +125,7 @@ Passeio *solve_problem(Problema prob, Vertex **st, int **wt ){
   Passeio *passeio = NULL;
   if ( validate_points(prob) == 0) {
     InitPasseio(&passeio, (prob.npontos)-1);
+    printf("invalido\n");
     passeio->CustoTotal = -1;
     return passeio;
   } 
@@ -136,9 +137,10 @@ Passeio *solve_problem(Problema prob, Vertex **st, int **wt ){
    else if(prob.modo == 'B'){
     passeio = modoB(prob, st, wt);
   }
- /*  else if(prob.modo == 'C'){
+  else if(prob.modo == 'C'){
+    printf("C\n");
     passeio = modoC(prob, st, wt);
-  } */
+  }
   return passeio;
 }
 
@@ -147,7 +149,8 @@ Passeio *solve_problem(Problema prob, Vertex **st, int **wt ){
 void DijkstraMagic(Problema prob, int **wt, Vertex **st,int Xa, int Ya, HeapNode *stop, int size){
   Heap *heap = NULL;
   HeapNode *V;
-
+  
+  printf("tou no dijsktra\n");
   //inicializa os vetores auxiliares
   for (int v = 0; v < prob.nlinhas; v++)
   {
@@ -170,9 +173,9 @@ void DijkstraMagic(Problema prob, int **wt, Vertex **st,int Xa, int Ya, HeapNode
   //Verificar se todos os pontos do caminho já foram verificados (Parte C)
   if (StopDijkstra(stop, size, (V->coord.x), (V->coord.y) ) ) break;
 
-  if (V->coord.x == Xb && V->coord.y == Yb) 
-    break;                                          //|||Em vez disto o que tá em cima||| */
-
+/*   if (V->coord.x == Xb && V->coord.y == Yb) 
+    break;                                          //|||Em vez disto o que tá em cima|||
+ */
   if (V->key != INT_MAX / 2)
   {
     InsertAndRelax_Adjs(heap, V, wt, st, prob);
@@ -192,7 +195,7 @@ Passeio *modoC (Problema prob, Vertex **st, int **wt){
   matrix = (Passo ***)checked_malloc(sizeof(Passo**)*prob.npontos);  
   for (int i = 0; i < prob.npontos; i++)
     matrix[i] = (Passo **)checked_malloc(sizeof(Passo*) * prob.npontos); 
-
+  
   //preeenche a matriz de adjacencias
   for (int i = 0; i < prob.npontos; i++){
 
@@ -210,20 +213,28 @@ Passeio *modoC (Problema prob, Vertex **st, int **wt){
     //guarda o caminho
     for(int j = i+1; j < prob.npontos; j ++){
       Path_AtoB(st, wt, prob, prob.pontos[j].x, prob.pontos[j].y, prob.pontos[i].x, prob.pontos[i].y, &(matrix[i][j]));
+       matrix[i][j]->custo = wt[prob.pontos[j].x][prob.pontos[j].y];
       if( matrix[i][j]->custo == -1 ){
+        printf("stop = 1\n");
         stop = 1;
         break; //nao necessita de repetir a função (modoC)
       }
-      matrix[i][j]->custo = wt[prob.pontos[j].x][prob.pontos[j].y];
-
+      printf("%d\n", matrix[i][j]->custo);
       if(i > 0){  //não é necessário guardar o caminho de volta para o vertice inicial
         InitPasso( &(matrix[j][i]) , matrix[i][j]->n_passos ) ;
         matrix[j][i]->custo = (matrix[i][j]->custo - prob.mapa[prob.pontos[j].x][prob.pontos[j].y]) + prob.mapa[prob.pontos[i].x][prob.pontos[i].y];
       }
     }
-    if(stop) break;
+    if(stop){
+      InitPasseio(&passeio, 0);
+      passeio->CustoTotal = -1;
+      break; 
+    } 
   }
-
+   
+  if(!stop){
+    InitPasseio(&passeio, prob.npontos - 1);
+  }
   //matriz feita
 
    for (int j = 1; j < (prob.npontos); j++)
@@ -231,7 +242,7 @@ Passeio *modoC (Problema prob, Vertex **st, int **wt){
     vert[j] = j; //atribuir a cada ponto 1 número inteiro
   }
   PermutationBeast(vert, 0, prob.npontos); 
-  
+  printf("%d\n", matrix[1][1]->custo);
   for (int i = 0; i < prob.npontos; i++)
   {
     for (int j = 1; j < prob.npontos; j++)
@@ -260,7 +271,8 @@ Passeio *modoB (Problema prob, Vertex **st, int **wt){
       V.coord.y = prob.pontos[i+1].y;
       V.key = 0;
       DijkstraMagic(prob, wt, st, prob.pontos[i].x, prob.pontos[i].y, &V, 1);
-      Path_AtoB(st, wt, prob, prob.pontos[i+1].x, prob.pontos[i+1].y, prob.pontos[i].x, prob.pontos[i].y, &(passeio->passos[idx]));
+      /* passeio->passos[idx] = (Passo*)checked_malloc(sizeof(Passo)); */
+      Path_AtoB(st, wt, prob, prob.pontos[i+1].x, prob.pontos[i+1].y, prob.pontos[i].x, prob.pontos[i].y, (&passeio->passos[idx]));
       passeio->passos[idx]->custo = wt[prob.pontos[i + 1].x][prob.pontos[i + 1].y];
       if(passeio->passos[idx]->custo == -1){
         passeio->CustoTotal = -1;
@@ -285,7 +297,7 @@ Passeio *modoB (Problema prob, Vertex **st, int **wt){
   if ((prob.pontos[0].x != prob.pontos[1].x) || (prob.pontos[0].y != prob.pontos[1].y)){
 
     DijkstraMagic(prob, wt, st, prob.pontos[0].x, prob.pontos[0].y, V, 1);
-    Path_AtoB(st, wt, prob, prob.pontos[1].x, prob.pontos[1].y, prob.pontos[0].x, prob.pontos[0].y, &passo);
+    Path_AtoB(st, wt, prob, prob.pontos[1].x, prob.pontos[1].y, prob.pontos[0].x, prob.pontos[0].y, (&passo));
     passo->custo += wt[prob.pontos[1].x][prob.pontos[1].y];
 
   }else
@@ -307,10 +319,12 @@ void Path_AtoB(Vertex **st, int **wt, Problema prob, int Xb, int Yb, int Xa, int
 {
   static int count = 0;
   static int aux = 0;
-
+  
+  printf("PATÊ\n");
   //se nao há solução
   if (st[Xb][Yb].x == -1 || st[Xb][Yb].y == -1){
     InitPasso(passo, 0);
+    
     (*passo)->custo = -1;
     return;
   }
@@ -323,7 +337,7 @@ void Path_AtoB(Vertex **st, int **wt, Problema prob, int Xb, int Yb, int Xa, int
   if ((st[Xb][Yb].x == Xa) && (st[Xb][Yb].y == Ya))
   {
     aux = 0;
-    InitPasso(passo , count);
+    InitPasso(passo, count);
   }
   (*passo)->passos[aux].x = Xb;
   (*passo)->passos[aux].y = Yb;
@@ -428,7 +442,7 @@ void InitPasseio(Passeio **P, int size){
 }
 
 void InitPasso (Passo **passo, int n_passos){
-  (*passo) = (Passo*)checked_malloc(sizeof(passo));
+  (*passo) = (Passo*)checked_malloc(sizeof(Passo));
   (*passo)->custo = 0;
   (*passo)->n_passos = n_passos;
   if (n_passos > 0){
@@ -442,7 +456,7 @@ void PermutationBeast(int *array, int i, int length)
   int aux;
   if (length == i)
   {
-    min = get_Passeio(min, array, lenght, matrix);
+    /* min = get_Passeio(min, array, lenght, matrix); */
     // printArr(array, length);   /* Aqui termina uma iteração */       //vai tar aqui uma funçao que calcula o peso do caminho para aquela iteração
 
     return;
@@ -479,14 +493,14 @@ int StopDijkstra(HeapNode *stop, int size, int x, int y){
   return 0;
 }
 
-Passeio *get_Passeio(Passeio *min, int *array, int length, passo **matrix){
+Passeio *get_Passeio(Passeio *min, int *array, int length, Passo **matrix){
   Passeio *anal = NULL;  //Passei em analise
-  //inicializar anal
+/*   //inicializar anal
 
   for(int i = 1; i < lenght; i++){
     anal->CustoTotal += matrix[array[i]][array[i + 1]].custo;
     if(anal->CustoTotal > min->CustoTotal)return min;
     anal->passos[i] = matrix[array[i]][array[i + 1]]
-  }
+  } */
   return anal;
 }
