@@ -65,6 +65,7 @@ Passo *modoA(Problema , Vertex **, int **);
 Passeio *modoB(Problema, Vertex **, int **);
 Passeio *modoC(Problema, Vertex **, int **);
 
+void InitVect(Problema , HeapNode ** , int , int );
 int SentCoordinates(Item, int);
 
 int StopDijkstra(HeapNode *, int, int, int);
