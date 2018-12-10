@@ -68,6 +68,11 @@ Passeio *modoC(Problema, Vertex **, int **);
 void InitVect(Problema , HeapNode ** , int , int );
 int SentCoordinates(Item, int);
 
+Passo* ReversePath(Passo *);
+Passeio *CopyPasseio(Passeio *);
+Passeio *CopyPasseio(Passeio *);
+
+
 int StopDijkstra(HeapNode *, int, int, int);
 void printArr(int *, int, Passo ***, Passeio *); ///Melhora para o Dijkstra e Maquina de Permutações
 void PermutationBeast(int *, int , int , Passo ***, Passeio *);

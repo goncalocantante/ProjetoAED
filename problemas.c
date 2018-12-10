@@ -182,8 +182,7 @@ void DijkstraMagic(Problema prob, int **wt, Vertex **st,int Xa, int Ya, HeapNode
 }
 
 
-Passeio *modoC(Problema prob, Vertex **st, int **wt)
-{
+Passeio *modoC(Problema prob, Vertex **st, int **wt){
   int size, stop = 0, j, *vert = (int *)checked_malloc(sizeof(int) * (prob.npontos - 1));
   HeapNode *vect;
   Passo ***matrix = NULL;
@@ -211,9 +210,9 @@ Passeio *modoC(Problema prob, Vertex **st, int **wt)
       }
       matrix[i][j]->custo = wt[prob.pontos[j].x][prob.pontos[j].y];
       //calcula posição transposta
-      //InitPasso(&(matrix[j][i]), matrix[i][j]->n_passos);  
-      Path_AtoB(st, wt, prob, prob.pontos[i].x, prob.pontos[i].y, prob.pontos[j].x, prob.pontos[j].y, &(matrix[j][i]));
-      matrix[j][i]->custo = wt[prob.pontos[i].x][prob.pontos[i].y];
+
+      matrix[j][i] = ReversePath(matrix[i][j]);
+      matrix[j][i]->custo = (matrix[i][j]->custo - prob.mapa[prob.pontos[j].x][prob.pontos[j].y]) + prob.mapa[prob.pontos[i].x][prob.pontos[i].y];
     }
     free(vect);    
     if (stop){
@@ -223,20 +222,21 @@ Passeio *modoC(Problema prob, Vertex **st, int **wt)
     }
   }
 
-  for(int i = 0; i < prob.npontos; i++){
+  /* for(int i = 0; i < prob.npontos; i++){
     for (int j = 0; j < prob.npontos; j++){
       printf(" %d ", matrix[i][j]->custo);
     } 
     printf("\n");  
-  }
+  } */
+
   InitPasseio(&passeio, (prob.npontos - 1));
   passeio->CustoTotal = INT_MAX / 2;
   for (int j = 1; j < prob.npontos; j++)
   {
     vert[j - 1] = j; //atribuir a cada ponto 1 número inteiro
   }
-
   PermutationBeast(vert, 0, prob.npontos - 1, matrix, passeio);
+  
 
   return passeio; //este return ta mal mas era so para nao dar erro
 }
@@ -388,7 +388,6 @@ void print_sol(FILE *fp, Problema *p, Passeio *passeio)
 {
   int n_passos = 0;
 
-  
   if(passeio->CustoTotal == -1){
     fprintf(fp, "%d %d %c %d %d %d\n", p->nlinhas, p->ncolunas, p->modo, p->npontos, -1, 0);
   }
@@ -398,12 +397,11 @@ void print_sol(FILE *fp, Problema *p, Passeio *passeio)
         n_passos += passeio->passos[i]->n_passos; 
     }
     fprintf(fp, "%d %d %c %d %d %d\n", p->nlinhas, p->ncolunas, p->modo, p->npontos, passeio->CustoTotal, n_passos);
-    printf("passeio n passos = %d\n", passeio->n_passos);
     for (int i = 0; i < passeio->n_passos; i++){
       if (passeio->passos[i] != NULL){
         for (int j = 0; j < passeio->passos[i]->n_passos; j++)
         {
-            fprintf(fp, "%d %d %d\n", passeio->passos[i]->passos[j].x, passeio->passos[i]->passos[j].y, p->mapa[passeio->passos[i]->passos[j].x][passeio->passos[i]->passos[j].y]);
+         fprintf(fp, "%d %d %d\n", passeio->passos[i]->passos[j].x, passeio->passos[i]->passos[j].y, p->mapa[passeio->passos[i]->passos[j].x][passeio->passos[i]->passos[j].y]);
         }
       }
     }
@@ -468,27 +466,22 @@ void printArr(int *a, int n, Passo ***matrix, Passeio *passeio_min)
   Passeio *passeio_atual;
   InitPasseio(&passeio_atual, n);
 
-  passeio_atual->passos[0] = matrix[0][a[0]];
   passeio_atual->CustoTotal += matrix[0][a[0]]->custo;
+  passeio_atual->passos[0] = matrix[0][a[0]];
 
-  for (int i = 1; i < n ; i++)
-  {
-    //este meu vetor passa a apontar para a posição da matriz
-    passeio_atual->passos[i] = matrix[a[i-1]][a[i]]; //custo
 
+  int count = passeio_atual->passos[0]->n_passos;
+  for(int i = 1; i < n ; i++){ 
     passeio_atual->CustoTotal += matrix[a[i-1]][a[i]]->custo;
-
+    passeio_atual->passos[i] = matrix[a[i-1]][a[i]];
+    count += matrix[a[i - 1]][a[i]]->custo;
   }
-
   if (passeio_atual->CustoTotal < passeio_min->CustoTotal){
     passeio_min->CustoTotal = passeio_atual->CustoTotal;
-    passeio_min->n_passos = passeio_atual->n_passos; //nao está inicializado
-    free(passeio_min->passos);
     passeio_min->passos = passeio_atual->passos;
   }
-
-  //free(passeio_atual->passos);
-  free(passeio_atual);
+  //free(passeio_atual->passos); NAO SEI ONDE FAZER ESTE FREE MAS
+  free(passeio_atual); 
 }
 
 int StopDijkstra(HeapNode *stop, int size, int x, int y){   
@@ -509,4 +502,19 @@ void InitVect(Problema prob, HeapNode ** vect, int size, int i){
     (*vect)[j].coord.y = prob.pontos[i + 1 + j].y;
     (*vect)[j].key = 1; // 1 = caminho nao calculado
   }
+}
+
+
+Passo* ReversePath(Passo *passo){
+  Passo *reverse;
+  InitPasso(&reverse, passo->n_passos);
+
+  //O ponto de partida do reverse é o ponto de chegada do normal
+  reverse->passos[0].x = passo->passos[passo->n_passos-1].x;
+  reverse->passos[0].y = passo->passos[passo->n_passos-1].y;
+  for (int i = 1; i < passo->n_passos; i++){
+       reverse->passos[i].x =  passo->passos[passo->n_passos - 1 - i].x;
+       reverse->passos[i].y = passo->passos[passo->n_passos - 1 - i].y;
+  }
+  return reverse;
 }
