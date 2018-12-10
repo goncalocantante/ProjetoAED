@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
   while ((prob = ler_problema(fp_in, &st, &wt, &passeio)) != NULL)
   { 
     if (passeio == NULL){
+      printf("priblema é no ler problema\n");
       passeio = solve_problem(*prob, st, wt);
     }
     print_sol(fp_out, prob, passeio);
