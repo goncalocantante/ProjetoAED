@@ -5,11 +5,11 @@
 int main(int argc, char *argv[])
 {
   FILE *fp_in = NULL, *fp_out = NULL;
-  problema *prob = NULL;
-  solucao *sol = NULL;
+  Problema *prob = NULL;
+  Passeio *passeio = NULL;
   char *file_out = NULL;
   int **wt = NULL; 
-  vertex **st = NULL;
+  Vertex **st = NULL;
   
   //testa se o ficheiro é válido
   test_file(argv[1], argc);
@@ -22,15 +22,15 @@ int main(int argc, char *argv[])
   fp_out = fopen(file_out, "w");
   if (fp_out == NULL)
     exit(0);
-  //enquanto houver problemas para resolver && e o problema for válido
-  while ((prob = ler_problema(fp_in, &st, &wt, &sol)) != NULL)
+  //enquanto houver problemas para resolver && e o Problema for válido
+  while ((prob = ler_problema(fp_in, &st, &wt, &passeio)) != NULL)
   { 
-    if (sol == NULL){
-      sol = solve_problem(*prob, st, wt);
+    if (passeio == NULL){
+      passeio = solve_problem(*prob, st, wt);
     }
-    print_sol(fp_out, prob, sol);
-    free_problema(prob, st, wt, sol);
-    sol = NULL;
+    print_sol(fp_out, prob, passeio);
+    free_problema(prob, st, wt, passeio);
+    passeio = NULL;
     st = NULL;
     wt = NULL;
   }

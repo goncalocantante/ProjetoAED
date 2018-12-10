@@ -8,54 +8,66 @@
 
 typedef struct _vertex{
   int x,y;
-}vertex;
+}Vertex;
+
+typedef struct {
+  int custo;
+  int n_passos;
+  Vertex *passos;
+}Passo;
 
 typedef struct {
   int nlinhas;
   int ncolunas;
   char modo;
   int npontos;
-  vertex *pontos;
+  Vertex *pontos;
   int **mapa;
-}problema;
+}Problema;
 
-typedef struct {
-  int custo;
-  int *n_passos;
-  vertex **passos;
-}solucao;
+typedef struct
+{
+  int CustoTotal;   //um passeio tem o custo total
+  int n_passos;
+  Passo **passos;   // e vários passos (ventor de ponteiros para Passo)
+} Passeio;
 
- typedef struct _HeapNode{
+typedef struct _HeapNode
+{
   int key;
-  vertex coord;
+  Vertex coord;
 } HeapNode;
 
 int CompareKey(Item, Item);
 Item CreateHeapNode(int , int , int );
 
 void printQueue(Heap *);
-void InsertAll(problema, int, int, Heap *);
-void Path_AtoB(vertex **, int **, problema, int, int, int, int, solucao *, int);
-void InsertAndRelax_Adjs(Heap *, HeapNode *, int **, vertex **, problema);
-int TrapedPoint(problema, int, int);
+void InsertAll(Problema, int, int, Heap *);
+void Path_AtoB(Vertex **, int **, Problema , int , int , int , int , Passo **);
 
-void RelaxEdge(Heap *, int **, vertex **, problema, HeapNode *, int, int);
-void print_sol(FILE *, problema *, solucao *);
+void InsertAndRelax_Adjs(Heap *, HeapNode *, int **, Vertex **, Problema);
+int TrapedPoint(Problema, int, int);
 
-void DijkstraMagic(problema, int **, vertex **, int, int, int, int);
-void InitSolution(solucao **, int);
-problema *ler_problema(FILE *, vertex ***, int ***, solucao **);
-int validate_problem(problema);
-int validate_points(problema);
-void free_problema(problema *, vertex **, int **, solucao *);
-solucao *solve_problem(problema, vertex **, int **);
-solucao *modoA(problema, vertex **, int **);
-solucao *modoB(problema, vertex **, int **);
-solucao *modoC(problema, vertex **, int **);
+void RelaxEdge(Heap *, int **, Vertex **, Problema, HeapNode *, int, int);
+void print_sol(FILE *, Problema *, Passeio *);
+
+void DijkstraMagic(Problema, int **, Vertex **, int, int, HeapNode* , int);
+void InitPasseio(Passeio **, int);
+void InitPasso (Passo **, int );
+
+
+Problema *ler_problema(FILE *, Vertex ***, int ***, Passeio **);
+int validate_problem(Problema);
+int validate_points(Problema);
+void free_problema(Problema *, Vertex **, int **, Passeio *);
+Passeio *solve_problem(Problema, Vertex **, int **);
+Passo *modoA(Problema , Vertex **, int **);
+Passeio *modoB(Problema, Vertex **, int **);
+Passeio *modoC(Problema, Vertex **, int **);
 
 int SentCoordinates(Item, int);
 
-int StopDijkstra(int *stop, int size);
-void printArr(int *, int);                     ///Melhora para o Dijkstra e Maquina de Permutações
+int StopDijkstra(HeapNode *, int, int, int);
+void printArr(int *, int); ///Melhora para o Dijkstra e Maquina de Permutações
 void PermutationBeast(int *a, int size, int n);
 #endif
