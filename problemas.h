@@ -59,7 +59,6 @@ void InitPasso (Passo **, int );
 Problema *ler_problema(FILE *, Vertex ***, int ***, Passeio **);
 int validate_problem(Problema);
 int validate_points(Problema);
-void free_problema(Problema *, Vertex **, int **, Passeio *);
 Passeio *solve_problem(Problema, Vertex **, int **);
 Passo *modoA(Problema , Vertex **, int **);
 Passeio *modoB(Problema, Vertex **, int **);
@@ -69,21 +68,18 @@ void InitVect(Problema , HeapNode ** , int , int );
 int SentCoordinates(Item, int);
 
 Passo* ReversePath(Passo *, Problema, int);
-Passeio *CopyPasseio(Passeio *);
-Passeio *CopyPasseio(Passeio *);
-
 
 int StopDijkstra(HeapNode *, int, int, int);
-void printArr(int *, int, Passo ***, Passeio *, Passeio *); ///Melhora para o Dijkstra e Maquina de Permutações
-void PermutationBeast(int *array, int i, int length, Passo ***matrix, Passeio * tmp, Passeio *best_passeio, int min_cost);
+void CustoPermut (int *, int , Passo ***, Passeio *, Passeio *, int *);
+void PermutationBeast(int *, int , int , Passo ***, Passeio * , Passeio *, int , int *);
 
 
+void free_problema(Problema *, Vertex **, int **, Passeio *);
+void freeMatrix(Passeio *, Passo ***, int , int *);
+void freePasseio(Passeio *);
 
-
-
-int RemoveDuplicates (Vertex *array, int size);
-
-int Custo_Ponderado(Passo ***matrix, int *array, int idx, int size, Passeio *tmp, Passeio *min, int min_cost);
+int RemoveDuplicates(Vertex * array, int size);
+int Custo_Ponderado(Passo * **matrix, int *array, int idx, int size, Passeio *tmp, Passeio *min, int min_cost);
 
 
 

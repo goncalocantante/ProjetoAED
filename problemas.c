@@ -148,10 +148,8 @@ void DijkstraMagic(Problema prob, int **wt, Vertex **st,int Xa, int Ya, HeapNode
   HeapNode *V;
 
   //inicializa os vetores auxiliares
-  for (int v = 0; v < prob.nlinhas; v++)
-  {
-    for (int w = 0; w < prob.ncolunas; w++)
-    {
+  for (int v = 0; v < prob.nlinhas; v++){
+    for (int w = 0; w < prob.ncolunas; w++){
       st[v][w].x = -1;
       st[v][w].y = -1;
       wt[v][w] = INT_MAX / 2;
@@ -167,11 +165,8 @@ void DijkstraMagic(Problema prob, int **wt, Vertex **st,int Xa, int Ya, HeapNode
   {
     V = getMostPri(heap);
     //Verificar se todos os pontos do caminho já foram verificados (Parte C)
-    if (StopDijkstra(stop, size, (V->coord.x), (V->coord.y) ) ) break;
-
-    /* if (V->coord.x == Xb && V->coord.y == Yb) 
-      break;                                          |||Em vez disto o que tá em cima||| */
-
+    if (StopDijkstra(stop, size, (V->coord.x), (V->coord.y) ) ) 
+      break;
     if (V->key != INT_MAX / 2)
     {
       InsertAndRelax_Adjs(heap, V, wt, st, prob);
@@ -183,17 +178,21 @@ void DijkstraMagic(Problema prob, int **wt, Vertex **st,int Xa, int Ya, HeapNode
 
 
 Passeio *modoC(Problema prob, Vertex **st, int **wt){
-  int size, N_Vertices, stop = 0, j, *vert, custo_min = INT_MAX/2;
+  int size, N_Vertices, stop = 0, j, *vert, *melhor_perm = NULL;
   HeapNode *vect;
   Passo ***matrix = NULL;
   Passeio *passeio = NULL, *tmp = NULL;
 
+  //Reordena o vetor 'eliminando' os adjacentes e retorno a nova dimensao
   N_Vertices = RemoveDuplicates(prob.pontos, prob.npontos);
-  vert = (int *)checked_malloc(sizeof(int) * (N_Vertices - 1) );
 
+  //aloca memória para a matriz de adjacências
   matrix = (Passo ***)checked_malloc(sizeof(Passo **) * N_Vertices);
-  for (int i = 0; i < N_Vertices; i++) //aloca memória para a matriz de adjacências
+  for (int i = 0; i < N_Vertices; i++) {
     matrix[i] = (Passo **)checked_malloc(sizeof(Passo *) * N_Vertices);
+    for (int j = 0; j < N_Vertices; j++)
+      matrix[i][j] = NULL;
+  }
 
   //preeenche a matriz de adjacencias
   for (int i = 0; i < N_Vertices; i++){
@@ -213,38 +212,34 @@ Passeio *modoC(Problema prob, Vertex **st, int **wt){
         break;
       }
       matrix[i][j]->custo = wt[prob.pontos[j].x][prob.pontos[j].y];
-      if (matrix[i][j]->custo < custo_min) custo_min = matrix[i][j]->custo; 
       //calcula posição transposta
       matrix[j][i] = ReversePath(matrix[i][j], prob, i);
       matrix[j][i]->custo = (matrix[i][j]->custo - prob.mapa[prob.pontos[j].x][prob.pontos[j].y]) + prob.mapa[prob.pontos[i].x][prob.pontos[i].y];
-      if (matrix[i][j]->custo < custo_min) custo_min = matrix[i][j]->custo;
     }
     free(vect);    
     if (stop){
       InitPasseio(&passeio, 0);
       passeio->CustoTotal = -1;
+      freeMatrix(passeio, matrix, N_Vertices, melhor_perm);
       return passeio;
     }
   }
+  vert = (int *)checked_malloc(sizeof(int) * N_Vertices);   //vetor a permutar
+  melhor_perm = (int *)checked_malloc(sizeof(int) * N_Vertices);  //vetor que guarda a melhor permutação
+  InitPasseio(&passeio, (N_Vertices - 1));  //soluçao final
+  passeio->CustoTotal = INT_MAX / 2;    
+  InitPasseio(&tmp, (N_Vertices - 1) );   //solucao temporaria 
+  for (int j = 0; j < N_Vertices; j++)
+    vert[j] = j; //atribuir a cada ponto 1 número inteiro
 
-  /* for(int i = 0; i < N_Vertices; i++){
-    for (int j = 0; j < N_Vertices; j++){
-      printf(" %d ", matrix[i][j]->custo);
-    } 
-    printf("\n");  
-  } */
-
-  InitPasseio(&passeio, (N_Vertices - 1)) ;
-  InitPasseio(&tmp, (N_Vertices - 1) );
-  passeio->CustoTotal = INT_MAX / 2;
-  for (int j = 1; j < N_Vertices; j++)
-  {
-    vert[j - 1] = j; //atribuir a cada ponto 1 número inteiro
-  }
-  PermutationBeast(vert, 0, (N_Vertices - 1), matrix, tmp, passeio, custo_min);
-  
-
-  return passeio; //este return ta mal mas era so para nao dar erro
+  PermutationBeast(vert, 1, N_Vertices, matrix, tmp, passeio, 0, melhor_perm);
+  //liberta memoria alocada para a matriz exceto a que ainda vai ser usada
+  freeMatrix(passeio, matrix, N_Vertices, melhor_perm);
+  free(vert);
+  free(melhor_perm);
+  free(tmp->passos);
+  free(tmp);
+  return passeio;
 }
 
 Passeio *modoB (Problema prob, Vertex **st, int **wt){
@@ -443,61 +438,53 @@ void InitPasso (Passo **passo, int n_passos){
     (*passo)->passos = NULL;
 }
 
-void PermutationBeast(int *array, int i, int length, Passo ***matrix, Passeio * tmp, Passeio *best_passeio, int min_cost)
+void PermutationBeast(int *array, int i, int length, Passo ***matrix, Passeio * tmp, Passeio *best_passeio, int custo_auxiliar, int *best_perm)
 {
   int aux;
+
+  if (i > 1){  //somar o passo que dei ao custo auxiliar
+    custo_auxiliar += matrix[array[i - 2]][array[i - 1]]->custo;
+  } 
+  if(custo_auxiliar > best_passeio->CustoTotal)  //e se custo auxilar já maior que o minimo    return;
+    return;
+
   if (length == i)
   {
-    printArr(array, length, matrix, tmp, best_passeio); /* Aqui termina uma iteração */ //vai tar aqui uma funçao que calcula o peso do caminho para aquela iteração
+    CustoPermut(array, length, matrix, tmp, best_passeio, best_perm); /* Aqui termina uma iteração */ 
     return;
   }
   int j = i;
   for (j = i; j < length; j++)
-  {
+  {                                 
     aux = array[i];
-    array[i] = array[j];
+    array[i] = array[j];    //swap
     array[j] = aux;
-
-    tmp->CustoTotal = 0;
-    tmp->CustoTotal += matrix[0][array[0]]->custo;
-    tmp->passos[0] = matrix[0][array[0]];
-
-    /* for(int ii = 1; ii < i; ii++){
-      tmp->CustoTotal += matrix[array[ii - 1]][array[ii]]->custo;
-      tmp->passos[ii] = matrix[array[ii - 1]][array[ii]];
-
-    } */
-   /*  if ( tmp->CustoTotal > best_passeio->CustoTotal)
-      return; */
-
-    if(Custo_Ponderado(matrix, array, i, length, tmp, best_passeio, min_cost)) return;
-
-
-    PermutationBeast(array, i + 1, length, matrix, tmp, best_passeio, min_cost);
-    aux = array[i];
-    array[i] = array[j];
+    PermutationBeast(array, i + 1, length, matrix, tmp, best_passeio, custo_auxiliar, best_perm);
+    aux = array[i];  
+    array[i] = array[j];     //swap
     array[j] = aux;
   }
   return;
 }
 
-//Prints the array
-void printArr(int *a, int n, Passo ***matrix, Passeio *tmp, Passeio *passeio_min)
-{
+//Calcula o custo de uma permutação
+void CustoPermut (int *a, int n, Passo ***matrix, Passeio *tmp, Passeio *passeio_min, int *save_perm){
 
   tmp->CustoTotal = 0;
-  tmp->CustoTotal += matrix[0][a[0]]->custo;
-  tmp->passos[0] = matrix[0][a[0]];
-  
-  for(int i = 1; i < n ; i++){ 
-    tmp->CustoTotal += matrix[a[i-1]][a[i]]->custo;
-    tmp->passos[i] = matrix[a[i-1]][a[i]];
+
+  for(int i = 0; i < n - 1; i++){ 
+    tmp->CustoTotal += matrix[a[i]][a[i+1]]->custo;
+    tmp->passos[i] = matrix[a[i]][a[i+1]];
   }
+
+  //Se a permutação calculada for mais barata, substitiu
   if (tmp->CustoTotal < passeio_min->CustoTotal){
     passeio_min->CustoTotal = tmp->CustoTotal;
-    for (int j = 0; j < passeio_min->n_passos; j++){
+    for (int j = 0; j < passeio_min->n_passos; j++)
       passeio_min->passos[j] = tmp->passos[j];
-    }
+    //guarda uma copia da melhor permutação
+    for (int i = 0; i < n; i++)
+      save_perm[i] = a[i];
   }
 }
 
@@ -505,7 +492,7 @@ int StopDijkstra(HeapNode *stop, int size, int x, int y){
   for(int i = 0; i < size; i++){
     if(stop[i].coord.x == x  && stop[i].coord.y == y)
       stop[i].key = 0;
-    if (stop[i].key == 1) return 0;   //se econtra algum ponto que nao foi visto
+    if (stop[i].key == 1) return 0;   //se encontra algum ponto que nao foi visto
   }
   return 1;
 }
@@ -559,19 +546,48 @@ int RemoveDuplicates (Vertex *array, int size){
   return size;
 }
 
-int Custo_Ponderado(Passo ***matrix, int *array, int idx, int size, Passeio *tmp, Passeio *min, int min_cost)
-{
 
-  for (int i = 1; i < idx; i++)
+void freeMatrix(Passeio *passeio, Passo ***matrix, int size,int *best_permutation){
+
+  if (best_permutation != NULL){
+    for (int i = 0; i < size - 1; i++){
+      matrix[best_permutation[i]][best_permutation[i+1]] = NULL;
+    }
+  }
+  for(int i = 0; i < size; i++){
+    for (int j = 0; j < size; j++){
+      if (matrix[i][j] != NULL){
+        if (matrix[i][j]->passos != NULL){
+          free(matrix[i][j]->passos);
+          matrix[i][j]->passos = NULL;
+        }
+        free(matrix[i][j]);
+        matrix[i][j] = NULL;
+      }
+    }
+    free(matrix[i]);
+    matrix[i] = NULL; 
+  }
+  free(matrix);
+  matrix = NULL;
+}
+
+void freePasseio(Passeio *passeio){
+
+  if (passeio->passos != NULL)
   {
-    tmp->CustoTotal += matrix[array[i - 1]][array[i]]->custo;
-    tmp->passos[i] = matrix[array[i - 1]][array[i]];
+    for (int i = 0; i < passeio->n_passos; i++)
+    {
+      if (passeio->passos[i] != NULL)
+      {
+        if (passeio->passos[i]->passos != NULL)
+        {
+          free(passeio->passos[i]->passos);
+        }
+        free(passeio->passos[i]);
+      }
+    }
+    free(passeio->passos);
   }
-  for(int i = idx; i < size; i++){
-    tmp->CustoTotal += min_cost;
-  }
-  if (tmp->CustoTotal > min->CustoTotal){
-    return 1;
-  }
-  return 0;
+  free(passeio);
 }
