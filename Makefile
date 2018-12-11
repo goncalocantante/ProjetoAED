@@ -1,4 +1,4 @@
-CFLAGS= -O3 -Wall -std=c99 
+CFLAGS= -g -Wall -std=c99 
 VFLAGS= --leak-check=full
 
 main: clean main.o problemas.o utils.o file.o queue.o

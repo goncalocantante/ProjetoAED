@@ -75,5 +75,16 @@ Passeio *CopyPasseio(Passeio *);
 
 int StopDijkstra(HeapNode *, int, int, int);
 void printArr(int *, int, Passo ***, Passeio *, Passeio *); ///Melhora para o Dijkstra e Maquina de Permutações
-void PermutationBeast(int *, int, int, Passo ***, Passeio *, Passeio *);
+void PermutationBeast(int *array, int i, int length, Passo ***matrix, Passeio * tmp, Passeio *best_passeio, int min_cost);
+
+
+
+
+
+int RemoveDuplicates (Vertex *array, int size);
+
+int Custo_Ponderado(Passo ***matrix, int *array, int idx, int size, Passeio *tmp, Passeio *min, int min_cost);
+
+
+
 #endif
