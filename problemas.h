@@ -68,7 +68,7 @@ Passeio *modoC(Problema, Vertex **, int **);
 void InitVect(Problema , HeapNode ** , int , int );
 int SentCoordinates(Item, int);
 
-Passo* ReversePath(Passo *);
+Passo* ReversePath(Passo *, Problema, int);
 Passeio *CopyPasseio(Passeio *);
 Passeio *CopyPasseio(Passeio *);
 

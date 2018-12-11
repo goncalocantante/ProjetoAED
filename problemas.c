@@ -211,7 +211,7 @@ Passeio *modoC(Problema prob, Vertex **st, int **wt){
       matrix[i][j]->custo = wt[prob.pontos[j].x][prob.pontos[j].y];
       //calcula posição transposta
 
-      matrix[j][i] = ReversePath(matrix[i][j]);
+      matrix[j][i] = ReversePath(matrix[i][j], prob, i);
       matrix[j][i]->custo = (matrix[i][j]->custo - prob.mapa[prob.pontos[j].x][prob.pontos[j].y]) + prob.mapa[prob.pontos[i].x][prob.pontos[i].y];
     }
     free(vect);    
@@ -469,7 +469,6 @@ void printArr(int *a, int n, Passo ***matrix, Passeio *passeio_min)
   passeio_atual->CustoTotal += matrix[0][a[0]]->custo;
   passeio_atual->passos[0] = matrix[0][a[0]];
 
-
   int count = passeio_atual->passos[0]->n_passos;
   for(int i = 1; i < n ; i++){ 
     passeio_atual->CustoTotal += matrix[a[i-1]][a[i]]->custo;
@@ -505,16 +504,17 @@ void InitVect(Problema prob, HeapNode ** vect, int size, int i){
 }
 
 
-Passo* ReversePath(Passo *passo){
+Passo* ReversePath(Passo *passo, Problema prob, int idx){
   Passo *reverse;
   InitPasso(&reverse, passo->n_passos);
 
-  //O ponto de partida do reverse é o ponto de chegada do normal
-  reverse->passos[0].x = passo->passos[passo->n_passos-1].x;
-  reverse->passos[0].y = passo->passos[passo->n_passos-1].y;
-  for (int i = 1; i < passo->n_passos; i++){
-       reverse->passos[i].x =  passo->passos[passo->n_passos - 1 - i].x;
-       reverse->passos[i].y = passo->passos[passo->n_passos - 1 - i].y;
+  for (int i = 0; i < passo->n_passos; i++){
+       reverse->passos[i].x =  passo->passos[passo->n_passos - 2 - i].x;
+       reverse->passos[i].y = passo->passos[passo->n_passos - 2 - i].y;
   }
+
+  //O ponto inicial (indice i) é agora o ponto final (indice passo->n_passos - 1)
+  reverse->passos[passo->n_passos - 1].x = prob.pontos[idx].x;
+  reverse->passos[passo->n_passos - 1].y = prob.pontos[idx].y;
   return reverse;
 }
