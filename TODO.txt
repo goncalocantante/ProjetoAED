@@ -1,6 +1,0 @@
-
-
-DUVIDAS:
-
-STRUCT SOLUCAO em vez de int ** pontos  fazer vertex *; 
-
