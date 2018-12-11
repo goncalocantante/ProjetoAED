@@ -186,7 +186,7 @@ Passeio *modoC(Problema prob, Vertex **st, int **wt){
   int size, stop = 0, j, *vert = (int *)checked_malloc(sizeof(int) * (prob.npontos - 1));
   HeapNode *vect;
   Passo ***matrix = NULL;
-  Passeio *passeio = NULL;
+  Passeio *passeio = NULL, *tmp = NULL;
 
   matrix = (Passo ***)checked_malloc(sizeof(Passo **) * prob.npontos);
   for (int i = 0; i < prob.npontos; i++) //aloca memória para a matriz de adjacências
@@ -205,37 +205,39 @@ Passeio *modoC(Problema prob, Vertex **st, int **wt){
     for (j = i + 1; j < prob.npontos; j++){
       Path_AtoB(st, wt, prob, prob.pontos[j].x, prob.pontos[j].y, prob.pontos[i].x, prob.pontos[i].y, &(matrix[i][j]));
       if (matrix[i][j]->custo == -1){
+        printf("i  j: %d   %d\n", i, j);
         stop = 1;
         break;
       }
       matrix[i][j]->custo = wt[prob.pontos[j].x][prob.pontos[j].y];
       //calcula posição transposta
-
       matrix[j][i] = ReversePath(matrix[i][j], prob, i);
       matrix[j][i]->custo = (matrix[i][j]->custo - prob.mapa[prob.pontos[j].x][prob.pontos[j].y]) + prob.mapa[prob.pontos[i].x][prob.pontos[i].y];
     }
     free(vect);    
     if (stop){
+      printf("YUPPPP\n");
       InitPasseio(&passeio, 0);
       passeio->CustoTotal = -1;
       return passeio;
     }
   }
 
-  /* for(int i = 0; i < prob.npontos; i++){
+ /*  for(int i = 0; i < prob.npontos; i++){
     for (int j = 0; j < prob.npontos; j++){
-      printf(" %d ", matrix[i][j]->custo);
+      printf(" %d ", matrix[i][j]->n_passos);
     } 
     printf("\n");  
   } */
 
   InitPasseio(&passeio, (prob.npontos - 1));
+  InitPasseio(&tmp, (prob.npontos - 1));
   passeio->CustoTotal = INT_MAX / 2;
   for (int j = 1; j < prob.npontos; j++)
   {
     vert[j - 1] = j; //atribuir a cada ponto 1 número inteiro
   }
-  PermutationBeast(vert, 0, prob.npontos - 1, matrix, passeio);
+  PermutationBeast(vert, 0, prob.npontos - 1, matrix, tmp, passeio);
   
 
   return passeio; //este return ta mal mas era so para nao dar erro
@@ -284,7 +286,6 @@ Passo *modoA (Problema prob, Vertex **st, int **wt){
     Path_AtoB(st, wt, prob, prob.pontos[1].x, prob.pontos[1].y, prob.pontos[0].x, prob.pontos[0].y, &passo);
     if (passo->custo != -1)
       passo->custo += wt[prob.pontos[1].x][prob.pontos[1].y];
-
   }else{
     InitPasso(&passo, 0);
   }
@@ -366,7 +367,6 @@ void RelaxEdge(Heap *heap, int **wt, Vertex **st, Problema prob, HeapNode *V, in
   }
 }
 
-
 int CompareKey(Item A, Item B)
 {
   HeapNode *a = (HeapNode *)A, *b = (HeapNode *)B;
@@ -438,12 +438,12 @@ void InitPasso (Passo **passo, int n_passos){
     (*passo)->passos = NULL;
 }
 
-void PermutationBeast(int *array, int i, int length, Passo ***matrix, Passeio *best_passeio)
+void PermutationBeast(int *array, int i, int length, Passo ***matrix, Passeio * tmp, Passeio *best_passeio)
 {
   int aux;
   if (length == i)
   {
-    printArr(array, length, matrix, best_passeio); /* Aqui termina uma iteração */ //vai tar aqui uma funçao que calcula o peso do caminho para aquela iteração
+    printArr(array, length, matrix, tmp, best_passeio); /* Aqui termina uma iteração */ //vai tar aqui uma funçao que calcula o peso do caminho para aquela iteração
     return;
   }
   int j = i;
@@ -452,7 +452,20 @@ void PermutationBeast(int *array, int i, int length, Passo ***matrix, Passeio *b
     aux = array[i];
     array[i] = array[j];
     array[j] = aux;
-    PermutationBeast(array, i + 1, length, matrix, best_passeio);
+
+    tmp->CustoTotal = 0;
+    tmp->CustoTotal += matrix[0][array[0]]->custo;
+    tmp->passos[0] = matrix[0][array[0]];
+    for(int ii = 0; ii < i; ii++){
+
+      tmp->CustoTotal += matrix[array[ii - 1]][array[ii]]->custo;
+      tmp->passos[ii] = matrix[array[ii - 1]][array[ii]];
+
+    }
+    if ( tmp->CustoTotal > best_passeio->CustoTotal)
+      return;
+
+    PermutationBeast(array, i + 1, length, matrix, tmp, best_passeio);
     aux = array[i];
     array[i] = array[j];
     array[j] = aux;
@@ -461,26 +474,23 @@ void PermutationBeast(int *array, int i, int length, Passo ***matrix, Passeio *b
 }
 
 //Prints the array
-void printArr(int *a, int n, Passo ***matrix, Passeio *passeio_min)
+void printArr(int *a, int n, Passo ***matrix, Passeio *tmp, Passeio *passeio_min)
 {
-  Passeio *passeio_atual;
-  InitPasseio(&passeio_atual, n);
 
-  passeio_atual->CustoTotal += matrix[0][a[0]]->custo;
-  passeio_atual->passos[0] = matrix[0][a[0]];
-
-  int count = passeio_atual->passos[0]->n_passos;
+  tmp->CustoTotal = 0;
+  tmp->CustoTotal += matrix[0][a[0]]->custo;
+  tmp->passos[0] = matrix[0][a[0]];
+  
   for(int i = 1; i < n ; i++){ 
-    passeio_atual->CustoTotal += matrix[a[i-1]][a[i]]->custo;
-    passeio_atual->passos[i] = matrix[a[i-1]][a[i]];
-    count += matrix[a[i - 1]][a[i]]->custo;
+    tmp->CustoTotal += matrix[a[i-1]][a[i]]->custo;
+    tmp->passos[i] = matrix[a[i-1]][a[i]];
   }
-  if (passeio_atual->CustoTotal < passeio_min->CustoTotal){
-    passeio_min->CustoTotal = passeio_atual->CustoTotal;
-    passeio_min->passos = passeio_atual->passos;
+  if (tmp->CustoTotal < passeio_min->CustoTotal){
+    passeio_min->CustoTotal = tmp->CustoTotal;
+    for (int j = 0; j < passeio_min->n_passos; j++){
+      passeio_min->passos[j] = tmp->passos[j];
+    }
   }
-  //free(passeio_atual->passos); NAO SEI ONDE FAZER ESTE FREE MAS
-  free(passeio_atual); 
 }
 
 int StopDijkstra(HeapNode *stop, int size, int x, int y){   
@@ -508,11 +518,10 @@ Passo* ReversePath(Passo *passo, Problema prob, int idx){
   Passo *reverse;
   InitPasso(&reverse, passo->n_passos);
 
-  for (int i = 0; i < passo->n_passos; i++){
-       reverse->passos[i].x =  passo->passos[passo->n_passos - 2 - i].x;
-       reverse->passos[i].y = passo->passos[passo->n_passos - 2 - i].y;
+  for (int i = 0; i < passo->n_passos - 1; i++){
+    reverse->passos[i].x =  passo->passos[passo->n_passos - 2 - i].x;
+    reverse->passos[i].y = passo->passos[passo->n_passos - 2 - i].y;
   }
-
   //O ponto inicial (indice i) é agora o ponto final (indice passo->n_passos - 1)
   reverse->passos[passo->n_passos - 1].x = prob.pontos[idx].x;
   reverse->passos[passo->n_passos - 1].y = prob.pontos[idx].y;

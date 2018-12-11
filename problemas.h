@@ -74,6 +74,6 @@ Passeio *CopyPasseio(Passeio *);
 
 
 int StopDijkstra(HeapNode *, int, int, int);
-void printArr(int *, int, Passo ***, Passeio *); ///Melhora para o Dijkstra e Maquina de Permutações
-void PermutationBeast(int *, int , int , Passo ***, Passeio *);
+void printArr(int *, int, Passo ***, Passeio *, Passeio *); ///Melhora para o Dijkstra e Maquina de Permutações
+void PermutationBeast(int *, int, int, Passo ***, Passeio *, Passeio *);
 #endif
